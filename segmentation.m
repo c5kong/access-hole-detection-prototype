@@ -1,4 +1,9 @@
-function [ X ] = segmentation(frameNumber, baseDirectory)
+%function [ X ] = segmentation(frameNumber, baseDirectory)
+
+	frameNumber='463';
+	baseDirectory='data/SSRR2013/'; 
+	
+	
 	close all;
 	clc;
 	frameNumber
@@ -40,11 +45,36 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	end
 	
 	%//=======================================================================
+	%// Find pairwise superpixel combinations
+	%//=======================================================================
+
+	count = 1;
+	regionList=[];
+	for i=1:nC
+		regionList(count, 1) = count;
+		count = count + 1;
+	end
+	
+	for i=1:nC    
+		for j=1:nC
+			image1 = labels == i;
+			image2 =  labels == j;
+			image3 = image1 | image2;		
+			[ L num ]  = bwlabel(image3);
+			if num == 1 & i~=j
+				regionList(count, 1) = i;
+				regionList(count, 2) = j;
+				count = count + 1;
+			end
+		end		
+	end	
+	
+	%//=======================================================================
 	%// Find average pixel intensity for each region and save Distance in cm
 	%//=======================================================================
 	regions = single(zeros(nC, 1));	
 	meterToCentimetersRatio = 100;
-	neighbours = zeros(nC, nC);	
+		
 	
 	for i=1:(nC)
 		regionSum = uint64(0);
@@ -60,11 +90,14 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end
 	end
 
+
+	
 	%//=======================================================================
 	%// Find neighbours
 	%//=======================================================================
 
-	for i=1:nC    
+	neighbours = zeros(nC, nC);
+	for i=1:nC
 		for j=1:nC
 			image1 = labels == i;
 			image2 =  labels == j;
@@ -171,9 +204,16 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%// Find Ratio of Region Area to Perimeter
 	%//=======================================================================
 	perimAreaRatio=[];
-	for i = 1:length(holeList)	
-		perim = length(find(bwperim(labels==holeList(i))>0));
+	perimRows=[];
+	perimCols=[];
+	for i = 1:length(holeList)			
+		perim = length(find(bwperim(labels==holeList(i))>0));		
 		perimAreaRatio(i,1)=perim/length(find(labels==holeList(i)));
+	
+		%-- Create list of rows/cols coordinates for perimeter of detection
+		[r c ] = find(bwperim(labels==holeList(i))>0);
+		perimRows(i, :)= r';
+		perimCols(i, :)= c';		
 	end
 
 	%//=======================================================================
@@ -233,11 +273,11 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	outputDirectory = strcat(baseDirectory, 'output/output');
 	M ={};
-	%figure, imshow(holes), colormap(gray), axis off, hold on
+	figure, imshow(holes), colormap(gray), axis off, hold on
 	for i = 1:length(detectionScore)	
 		if detectionScore > 0
 			[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
-	%		rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 4, 'EdgeColor','g');
+			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 4, 'EdgeColor','g');
 			M{i, 1} = depthImage;
 			M{i, 2} = min(cols);
 			M{i, 3} = min(rows);
@@ -247,15 +287,14 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			
 		end
 	end
-	dlmcell(strcat(outputDirectory, '.csv'), M, ',', '-a');
-	%f=getframe(gca);
-	%[X, map] = frame2im(f);
+	%dlmcell(strcat(outputDirectory, '.csv'), M, ',', '-a');
+	f=getframe(gca);
+	[X, map] = frame2im(f);
 	%imwrite(X, strcat(outputDirectory, depthImage));
 	%hold off;
-end
 
-
-
-
+	
+	
+%end
 
 
