@@ -1,6 +1,6 @@
 %function [ X ] = segmentation(frameNumber, baseDirectory)
 
-	frameNumber='463';
+	frameNumber='480';
 	baseDirectory='data/SSRR2013/'; 
 		
 	frameNumber
@@ -43,7 +43,7 @@
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 10; % nC is the target number of superpixels.
+	nC = 20; % nC is the target number of superpixels.
 	lambda_prime = 0.5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -225,8 +225,14 @@
 		perimAreaRatio(i,1)=perim/length(find(labels==holeList(i)));
 	
 		%-- Create list of rows/cols coordinates for perimeter of detection
-		[r c ] = find(bwperim(labels==holeList(i))>0);
 		
+		 
+		%[r c ] = find(bwperim(labels==holeList(i), 8) > 0);
+		%figure,imshow(bwmorph(labels==holeList(i),'remove'));
+		%figure,imshow(bwperim(labels==holeList(i)));
+		A= bwperim(bwperim(labels==holeList(i)) - (labels==holeList(i)));
+		%figure,imshow(A);
+		[r c ] = find(A > 0);
 	end
 	
 	for i = 1:length(r)
@@ -235,14 +241,13 @@
 		y(i,1) = ((r(i)- dIntrinsicVals(6))*z(i)/dIntrinsicVals(5));
 	end
 	
-
 	[ center, radii, evecs, v ] = ellipsoid_fit( [x y z ] );
 	
 
-% draw data
-plot3( x, y, z, '.r' );
-hold on;
-	
+	% draw data
+	figure, plot3( x, y, z, '.r' );
+	figure, plot( x, y, '.r' );
+	hist(z);
 
 
 	%//=======================================================================
