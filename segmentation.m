@@ -2,16 +2,32 @@
 
 	frameNumber='463';
 	baseDirectory='data/SSRR2013/'; 
-	
-	
+		
+	frameNumber
 	close all;
 	clc;
-	frameNumber
+	
+	%//=======================================================================
+	%// Kinect Calibration
+	%//=======================================================================
+	transFudgedVals = [-1.0051469877240551e-02, 3.6296501168410337e-02, -5.6312216296436068e-03];
+	rgbIntrinsicVals = [5.1997666258124059e+02, 0, 3.2035780640775630e+02, 0, 5.1906823659381246e+02, 2.5225475675063598e+02, 0, 0, 1];
+	rgbDistortionVals =	[2.3282269533065048e-01, -9.2676911644431559e-01, 1.3785293110664286e-03, -3.0566975301827910e-03, 1.4220722610860992];
+	dIntrinsicVals = [5.8607137222498295e+02, 0, 3.1056890695602476e+02, 0, 5.8567560309796363e+02, 2.4912535666434175e+02, 0, 0, 1];
+	dDistortionVals = [-2.1835400781694411e-01, 1.7910224568641626, 3.8831737257415703e-03, -7.9254527156540370e-04, -5.6385675132989217];
+	rotationVals = [9.9997653425563382e-01, 6.8485245163549995e-03, -1.6926322742441872e-04, -6.8493271512092896e-03, 9.9996243174913368e-01, -5.3124201579767246e-03, 1.3287462880795254e-04,  5.3134548373026313e-03, 9.9998587467125000e-01];
+	translationVals = [2.3951469877240551e-02, -3.6296501168410337e-03, -5.6312216296436068e-03];
+	
+	
+	%//=======================================================================
+	%// initialize feature scores
+	%//=======================================================================
 	depthScore =[];
 	widthScore =[];
 	aspectRatioScore =[];
 	contrastScore =[];
 	detectionScore=[];
+
 	
 	%//=======================================================================
 	%// Load Images
@@ -204,17 +220,24 @@
 	%// Find Ratio of Region Area to Perimeter
 	%//=======================================================================
 	perimAreaRatio=[];
-	perimRows=[];
-	perimCols=[];
 	for i = 1:length(holeList)			
 		perim = length(find(bwperim(labels==holeList(i))>0));		
 		perimAreaRatio(i,1)=perim/length(find(labels==holeList(i)));
 	
 		%-- Create list of rows/cols coordinates for perimeter of detection
 		[r c ] = find(bwperim(labels==holeList(i))>0);
-		perimRows(i, :)= r';
-		perimCols(i, :)= c';		
+		
 	end
+	
+	for i = 1:length(r)
+		z(i,1) = depthTable(img(r(i), c(i)));
+		x(i,1) = ((c(i)- dIntrinsicVals(3))*z(i)/dIntrinsicVals(1));
+		y(i,1) = ((r(i)- dIntrinsicVals(6))*z(i)/dIntrinsicVals(5));
+	end
+	
+
+	x = (float)((uDepth - dIntrinsicVals[2])*z / dIntrinsicVals[0]);
+	y =	(float)((vDepth - dIntrinsicVals[5])*z / dIntrinsicVals[4]);
 
 	%//=======================================================================
 	%// Find Minimum Width/Height
