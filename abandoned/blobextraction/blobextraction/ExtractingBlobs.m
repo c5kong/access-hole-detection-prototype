@@ -1,0 +1,128 @@
+%function %[MATRIX,ADAPTIVE,ACCEPTEDMOD1,ACCEPTEDMOD2,ACCEPTEDMOD3]=BLOBEXTRACTION2(im,LLFITTING)
+function [ACCEPTEDMOD1,ACCEPTEDMOD2,ACCEPTEDMOD3]=ExtractingBlobs(im,LLFITTING)
+
+% This file is part of the Blob detection Toolbox - Copyright (C) 2009
+% by Mohammad Jahangiri and Imperial College London.
+
+%,ACCEPTEDMOD4,ACCEPTEDMOD5]=BLOBEXTRACTION(im,LLFITTING)
+
+%****************************Finding Line Support Regions*************
+slot=3;
+PER=4;
+PER=PER/100;
+regthresh=0.2;
+LLFITTING=Areaelim(LLFITTING,PER);
+MAINGOODCOLORIMAGE=ORIENTATION(im,LLFITTING,slot);
+[LENGTH,WIDTH]=size(LLFITTING);
+
+%*******************First module of Region Extraction ******************
+%The first module of extraction consist of the following parts:
+%1) Thresholding the constructed map
+%2) Eliminating the connected regions with area less than 8% of the
+%whole scene
+%3) Filling in the extracted blobs.
+%4) Estimating the thickness of the white lines in the binary image.
+%5) Openning the binary image with a structuring element larger than the
+% estimated thickness.
+%6) Smoothing the binary image.
+%7) Detecting the regions with convexity more than 0.2.
+%8) Saving the detected regular regions as regions of interest.
+%9) Eliminating the detected regular regions from the binary image.
+%figure,imshow(LLFITTING)
+BLACK=~LLFITTING;
+LABELBLACK=bwlabel(BLACK);
+PROPS=regionprops(LABELBLACK,'all');
+LLFITTINGMAIN=LLFITTING;
+LLFITTINGFORIG=LLFITTING;
+for i=1:max(LABELBLACK(:))
+    A=(PROPS(i).PixelList(:,1)<4)|(PROPS(i).PixelList(:,2)<4)|(PROPS(i).PixelList(:,1)>(WIDTH-4))|((PROPS(i).PixelList(:,2))>(LENGTH-4));
+    if (~any(A(:)==1))&(PROPS(i).Area<(0.01*LENGTH*WIDTH))
+        LLFITTINGFORIG(PROPS(i).PixelIdxList)=1;
+    end
+end
+%figure,imshow(LLFITTINGFORIG);
+THICKNESS=NUMOFOPENNING2(LLFITTINGFORIG);
+EL=strel('rectangle',[round(THICKNESS)+2,round(THICKNESS)+2]);
+%EL=strel('rectangle',[10 10])
+LLFITTINGFORIG=imopen(LLFITTINGFORIG,EL);
+LLFITTINGFORIG=BINARYSMOOTHING(LLFITTINGFORIG);
+LLFITTINGFORIG=Areaelim(LLFITTINGFORIG,PER);
+[ACCEPTEDMOD1,LLFITTING]=FINDREGULARLSR(LLFITTINGFORIG,LLFITTING,MAINGOODCOLORIMAGE,regthresh);
+
+%**************Second Module of Region Extraction****************************
+% In this module regular regions are extracted from the remaining irregular
+% regions. For this the following steps are applied to the remaining
+% connected regions.
+% 1) Estimating the thickness of the white lines in the remaining regions.
+% 1) Detecting and saving the convex and regular black blobs.
+% 2) Dilating the detected blobs with a structural element larger than
+%  the estimated thickness.
+% 3) Saving the dilated blobs
+% 3) Eliminating the dilated blobs from the remaining regions.
+LLFITTING=Areaelim(LLFITTINGMAIN,PER);
+%figure,imshow(LLFITTING);
+THICKNESS2=NUMOFOPENNING2(LLFITTING);
+FILLED2=zeros(LENGTH,WIDTH);
+ACCEPTEDDEF=cell(1,1);
+COUNTREG2=0;
+%MATRIX2=FINDDEPTH(LLFITTING);
+BLACK2=~LLFITTING;
+LABELBLACK2=bwlabel(BLACK2);
+PROPS=regionprops(LABELBLACK2,'all');
+for i=1:max(LABELBLACK2(:))
+    A=(PROPS(i).PixelList(:,1)<4)|(PROPS(i).PixelList(:,2)<4)|(PROPS(i).PixelList(:,1)>(WIDTH-4))|((PROPS(i).PixelList(:,2))>(LENGTH-4));
+    if ~any(A(:)==1)
+        FILLED2(PROPS(i).PixelIdxList)=1;
+    end
+end
+%regthresh=0.1;
+LABELNEW=bwlabel(FILLED2);
+STATS=regionprops(LABELNEW,'all');
+if max(LABELNEW(:))>0
+    for ii=1:max(LABELNEW(:))
+        CONVIM=STATS(ii).ConvexHull;
+        G=(LABELNEW==ii);
+        vertices=CONVIM;
+        [LINES,A,regularity,LINEIMAGE]=VERTEX(vertices,G,G);
+        if (regularity>regthresh)&(STATS(ii).Area>(0.04*LENGTH*WIDTH))
+            EL=strel('rectangle',[THICKNESS2,THICKNESS2]);
+            G=imdilate(G,EL);
+            L2=bwlabel(G);
+            STATS2=regionprops(L2,'all');
+            COUNTREG2=COUNTREG2+1;
+            ACCEPTEDDEF{1,COUNTREG2}=STATS2.ConvexHull;
+            LLFITTING(find(G==1))=0;
+        end
+    end
+end
+ACCEPTEDMOD2=ACCEPTEDDEF;
+
+
+%*********Third Module of Region Extraction***************************
+
+% 2) Smoothing the regionsS
+% In this module the remaining regular regions which were not extracted in the
+% previous module are identified. This module consists of three steps.
+% 1) Eliminating the regions with area less than 0.08 of the whole scene
+% 3) Identifying the regular regions
+
+LLFITTING=Areaelim(LLFITTING,PER);
+LLFITTING=BINARYSMOOTHING(LLFITTING);
+LLFITTING=Areaelim(LLFITTING,PER);
+[ACCEPTEDDEF,LLFITTING]=FINDREGULARLSR2(LLFITTING,LLFITTING,MAINGOODCOLORIMAGE,regthresh);
+ACCEPTEDMOD3=ACCEPTEDDEF;
+
+COMPLEMENTARY=[ACCEPTEDMOD2 ACCEPTEDMOD3];
+%Showing the accepted regions
+% OUT=SHOWING(LLFITTING,COMPLEMENTARY);
+% Lrgb=label2rgb(OUT,'jet', 'w', 'shuffle');
+% figure,imshow(Lrgb)
+ALL=[ACCEPTEDMOD1];
+%OUT=SHOWING(LLFITTING,ALL);
+%Lrgb=label2rgb(OUT,'jet', 'w', 'shuffle');
+%figure,imshow(Lrgb)
+
+%
+ALL=[ACCEPTEDMOD1 ACCEPTEDMOD2 ACCEPTEDMOD3];
+
+

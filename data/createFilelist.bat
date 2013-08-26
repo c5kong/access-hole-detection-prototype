@@ -1,0 +1,1 @@
+for /r . %%g in (*.*) do echo %%~nxg >> filelist.txt
