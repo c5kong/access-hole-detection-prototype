@@ -236,8 +236,14 @@
 	end
 	
 
-	x = (float)((uDepth - dIntrinsicVals[2])*z / dIntrinsicVals[0]);
-	y =	(float)((vDepth - dIntrinsicVals[5])*z / dIntrinsicVals[4]);
+	[ center, radii, evecs, v ] = ellipsoid_fit( [x y z ] );
+	
+
+% draw data
+plot3( x, y, z, '.r' );
+hold on;
+	
+
 
 	%//=======================================================================
 	%// Find Minimum Width/Height
