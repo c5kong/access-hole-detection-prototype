@@ -6,7 +6,7 @@
 	frameNumber
 	close all;
 	clc;
-	
+	clear all;
 	%//=======================================================================
 	%// Kinect Calibration
 	%//=======================================================================
@@ -43,7 +43,7 @@
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 20; % nC is the target number of superpixels.
+	nC = 10; % nC is the target number of superpixels.
 	lambda_prime = 0.5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -230,24 +230,45 @@
 		%[r c ] = find(bwperim(labels==holeList(i), 8) > 0);
 		%figure,imshow(bwmorph(labels==holeList(i),'remove'));
 		%figure,imshow(bwperim(labels==holeList(i)));
-		A= bwperim(bwperim(labels==holeList(i)) - (labels==holeList(i)));
+		
+		se90 = strel('line', 2, 90);
+		se0 = strel('line', 2, 0);
+		BWsdil = imdilate(labels==holeList(i), [se90 se0]);
+		A= bwperim(BWsdil);
+		
+		%A= bwperim(bwperim(labels==holeList(i)) - (labels==holeList(i)));
 		%figure,imshow(A);
 		[r c ] = find(A > 0);
 	end
+		
 	
-	for i = 1:length(r)
-		z(i,1) = depthTable(img(r(i), c(i)));
-		x(i,1) = ((c(i)- dIntrinsicVals(3))*z(i)/dIntrinsicVals(1));
-		y(i,1) = ((r(i)- dIntrinsicVals(6))*z(i)/dIntrinsicVals(5));
+	for i = 1:length(r)		
+		tempZ(i,1) = depthTable(img(r(i), c(i)));		
 	end
 	
-	[ center, radii, evecs, v ] = ellipsoid_fit( [x y z ] );
+	stdZ=std(tempZ);
+	medianZ=median(tempZ);
+	
+	j = 1;
+	for i= 1:length(tempZ)
+		if abs(tempZ(i)-medianZ) < stdZ
+			%--add to list
+			z(j,1) = tempZ(i);
+			x(j,1) = ((c(i)- dIntrinsicVals(3))*z(j)/dIntrinsicVals(1));
+			y(j,1) = ((r(i)- dIntrinsicVals(6))*z(j)/dIntrinsicVals(5));			
+			j=j+1;
+		end
+	end
 	
 
 	% draw data
 	figure, plot3( x, y, z, '.r' );
 	figure, plot( x, y, '.r' );
-	hist(z);
+	figure, hist(z);
+	%var(z)
+	
+	[ center, radii, evecs, v ] = ellipsoid_fit( [x y z ] );
+
 
 
 	%//=======================================================================
@@ -307,11 +328,11 @@
 	%//=======================================================================
 	outputDirectory = strcat(baseDirectory, 'output/output');
 	M ={};
-	figure, imshow(holes), colormap(gray), axis off, hold on
+	%figure, imshow(holes), colormap(gray), axis off, hold on
 	for i = 1:length(detectionScore)	
 		if detectionScore > 0
 			[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
-			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 4, 'EdgeColor','g');
+	%		rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 4, 'EdgeColor','g');
 			M{i, 1} = depthImage;
 			M{i, 2} = min(cols);
 			M{i, 3} = min(rows);
@@ -322,8 +343,8 @@
 		end
 	end
 	%dlmcell(strcat(outputDirectory, '.csv'), M, ',', '-a');
-	f=getframe(gca);
-	[X, map] = frame2im(f);
+	%f=getframe(gca);
+	%[X, map] = frame2im(f);
 	%imwrite(X, strcat(outputDirectory, depthImage));
 	%hold off;
 
