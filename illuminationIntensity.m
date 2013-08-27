@@ -59,7 +59,7 @@
 			end			
 		end
 		
-		avgLum = sum/((x2-x1)+(y2-y1));
+		avgLum = sum/((x2-x1)*(y2-y1));
 		
 		
 	end
