@@ -9,6 +9,8 @@ c = 10;
 x = a * cos(s) .* cos( t );
 y = b * cos(s) .* sin( t );
 z = c * sin(s);
+
+
 % rotation
 ang = pi/6;
 xt = x * cos( ang ) - y * sin( ang );
@@ -22,7 +24,7 @@ y = yt + shifty;
 z = z  + shiftz;
 
 % add testing noise:
-noiseIntensity = 0.;
+noiseIntensity = 0.0;
 x = x + randn( size( s ) ) * noiseIntensity;
 y = y + randn( size( s ) ) * noiseIntensity;
 z = z + randn( size( s ) ) * noiseIntensity;
@@ -42,8 +44,10 @@ fprintf( '%.3g ', v );
 fprintf( '\n' );
 
 % draw data
-plot3( x, y, z, '.r' );
+figure, plot3( x, y, z, '.r' );
 hold on;
+
+pause
 
 %draw fit
 maxd = max( [ a b c ] );
@@ -59,3 +63,28 @@ view( -70, 40 );
 axis vis3d;
 camlight;
 lighting phong;
+
+
+%--------------
+% test ellipsoid fit
+
+% create the test data:
+% radii
+a = 8;
+b = .5;
+c = 10;
+[ s, t ] = meshgrid( 0 : 0.3 : pi/2, 0 : 0.3 : pi );
+x = a * cos(s) .* cos( t );
+y = b * cos(s) .* sin( t );
+z = c * sin(s);
+
+z = z +10;
+
+x = x(:);
+y = y(:);
+z = z(:);
+
+figure, plot3( x, y, z, '.r' ), grid on;
+
+A = cov([x y z]);
+[U, S, V] = svd(A);

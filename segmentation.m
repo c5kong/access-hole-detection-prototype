@@ -1,12 +1,12 @@
 %function [ X ] = segmentation(frameNumber, baseDirectory)
 
-	frameNumber='480';
-	baseDirectory='data/SSRR2013/'; 
-		
-	frameNumber
 	close all;
 	clc;
 	clear all;
+	frameNumber='480';
+	baseDirectory='data/SSRR2013/'; 
+	frameNumber		
+
 	%//=======================================================================
 	%// Kinect Calibration
 	%//=======================================================================
@@ -262,13 +262,19 @@
 	
 
 	% draw data
-	figure, plot3( x, y, z, '.r' );
-	figure, plot( x, y, '.r' );
-	figure, hist(z);
-	%var(z)
-	
-	[ center, radii, evecs, v ] = ellipsoid_fit( [x y z ] );
+	%figure, plot3( x, y, z, '.r' );
+	%figure, plot( x, y, '.r' );
+	%figure, hist(z);
 
+	C = cov([x y z]);
+	[U S V] = svd(C);
+	
+	A = [x y z]';
+	Uprime = U(:,1:2);
+	B = Uprime'*A;
+	principleAxis1 = 2* max(abs(B (1,:)));
+	principleAxis2 = 2* max(abs(B (2,:)));
+	
 
 
 	%//=======================================================================
