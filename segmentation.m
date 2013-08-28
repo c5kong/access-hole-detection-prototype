@@ -225,30 +225,21 @@
 		perimAreaRatio(i,1)=perim/length(find(labels==holeList(i)));
 	
 		%-- Create list of rows/cols coordinates for perimeter of detection
-		
-		 
-		%[r c ] = find(bwperim(labels==holeList(i), 8) > 0);
-		%figure,imshow(bwmorph(labels==holeList(i),'remove'));
-		%figure,imshow(bwperim(labels==holeList(i)));
-		
 		se90 = strel('line', 2, 90);
 		se0 = strel('line', 2, 0);
-		BWsdil = imdilate(labels==holeList(i), [se90 se0]);
-		A= bwperim(BWsdil);
-		
-		%A= bwperim(bwperim(labels==holeList(i)) - (labels==holeList(i)));
-		%figure,imshow(A);
-		[r c ] = find(A > 0);
+		dilatedPerim = imdilate(labels==holeList(i), [se90 se0]);
+		[r c ] = find(bwperim(dilatedPerim) > 0);
 	end
-		
-	
+			
 	for i = 1:length(r)		
 		tempZ(i,1) = depthTable(img(r(i), c(i)));		
+		%z(i,1) = depthTable(img(r(i), c(i)));		
+		%x(i,1) = ((c(i)- dIntrinsicVals(3))*z(i)/dIntrinsicVals(1));
+		%y(i,1) = ((r(i)- dIntrinsicVals(6))*z(i)/dIntrinsicVals(5));		
 	end
 	
 	stdZ=std(tempZ);
 	medianZ=median(tempZ);
-	
 	j = 1;
 	for i= 1:length(tempZ)
 		if abs(tempZ(i)-medianZ) < stdZ
@@ -260,22 +251,37 @@
 		end
 	end
 	
-
 	% draw data
 	%figure, plot3( x, y, z, '.r' );
 	%figure, plot( x, y, '.r' );
 	%figure, hist(z);
+	
+	
+	%-- subtract mean from x, y, z 
+	meanX=mean(x(:));
+	meanY=mean(y(:));
+	meanZ=mean(z(:));
+	
+	for i=i:length(x)
+		x(i,1)= x-meanX;
+		y(i,1)= y-meanY;
+		z(i,1)= z-meanZ;
+	end
+	
 
+	%find covariance matrix
 	C = cov([x y z]);
+	
+	%find C = UDU' using single variable decomposition
 	[U S V] = svd(C);
 	
+	%project x and y onto axes and take the max
 	A = [x y z]';
 	Uprime = U(:,1:2);
 	B = Uprime'*A;
 	principleAxis1 = 2* max(abs(B (1,:)));
 	principleAxis2 = 2* max(abs(B (2,:)));
 	
-
 
 	%//=======================================================================
 	%// Find Minimum Width/Height
