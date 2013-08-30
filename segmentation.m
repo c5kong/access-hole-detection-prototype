@@ -229,58 +229,55 @@
 		se0 = strel('line', 2, 0);
 		dilatedPerim = imdilate(labels==holeList(i), [se90 se0]);
 		[r c ] = find(bwperim(dilatedPerim) > 0);
-	end
-			
-	for i = 1:length(r)		
-		tempZ(i,1) = depthTable(img(r(i), c(i)));		
-		%z(i,1) = depthTable(img(r(i), c(i)));		
-		%x(i,1) = ((c(i)- dIntrinsicVals(3))*z(i)/dIntrinsicVals(1));
-		%y(i,1) = ((r(i)- dIntrinsicVals(6))*z(i)/dIntrinsicVals(5));		
-	end
-	
-	stdZ=std(tempZ);
-	medianZ=median(tempZ);
-	j = 1;
-	for i= 1:length(tempZ)
-		if abs(tempZ(i)-medianZ) < stdZ
-			%--add to list
-			z(j,1) = tempZ(i);
-			x(j,1) = ((c(i)- dIntrinsicVals(3))*z(j)/dIntrinsicVals(1));
-			y(j,1) = ((r(i)- dIntrinsicVals(6))*z(j)/dIntrinsicVals(5));			
-			j=j+1;
+		
+		%--filter depth data around the perimeter using standard deviation
+		for j = 1:length(r)		
+			tempZ(j,1) = depthTable(img(r(j), c(j)));			
+		end		
+		stdZ=std(tempZ);
+		medianZ=median(tempZ);
+		count = 1;
+		for j= 1:length(tempZ)
+			if abs(tempZ(j)-medianZ) < stdZ
+				%--add to list
+				z(count,1) = tempZ(j);
+				x(count,1) = ((c(j)- dIntrinsicVals(3))*z(count)/dIntrinsicVals(1));
+				y(count,1) = ((r(j)- dIntrinsicVals(6))*z(count)/dIntrinsicVals(5));			
+				count=count+1;
+			end
 		end
-	end
-	
-	% draw data
-	%figure, plot3( x, y, z, '.r' );
-	%figure, plot( x, y, '.r' );
-	%figure, hist(z);
-	
-	
-	%-- subtract mean from x, y, z 
-	meanX=mean(x(:));
-	meanY=mean(y(:));
-	meanZ=mean(z(:));
-	
-	for i=i:length(x)
-		x(i,1)= x-meanX;
-		y(i,1)= y-meanY;
-		z(i,1)= z-meanZ;
-	end
-	
+		
+		% draw data
+		%figure, plot3( x, y, z, '.r' );
+		%figure, plot( x, y, '.r' );
+		%figure, hist(z);
+		
+		
+		%-- subtract mean from x, y, z 
+		meanX=mean(x(:));
+		meanY=mean(y(:));
+		meanZ=mean(z(:));
+		
+		for j=j:length(x)
+			x(j,1)= x-meanX;
+			y(j,1)= y-meanY;
+			z(j,1)= z-meanZ;
+		end
+		
 
-	%find covariance matrix
-	C = cov([x y z]);
-	
-	%find C = UDU' using single variable decomposition
-	[U S V] = svd(C);
-	
-	%project x and y onto axes and take the max
-	A = [x y z]';
-	Uprime = U(:,1:2);
-	B = Uprime'*A;
-	principleAxis1 = 2* max(abs(B (1,:)));
-	principleAxis2 = 2* max(abs(B (2,:)));
+		%find covariance matrix
+		C = cov([x y z]);
+		
+		%find C = UDU' using single variable decomposition
+		[U S V] = svd(C);
+		
+		%project x and y onto axes and take the max
+		A = [x y z]';
+		Uprime = U(:,1:2);
+		B = Uprime'*A;
+		principleAxis1(j,1) = 2* max(abs(B (1,:)));
+		principleAxis2(j,1) = 2* max(abs(B (2,:)));
+	end
 	
 
 	%//=======================================================================
