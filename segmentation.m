@@ -3,23 +3,10 @@
 	close all;
 	clc;
 	clear all;
-	%frameNumber='480';
-	%baseDirectory='data/SSRR2013/
 	frameNumber='000364';
 	baseDirectory='data/openni_data/'; 
 	frameNumber		
 
-	%//=======================================================================
-	%// Kinect Calibration
-	%//=======================================================================
-	transFudgedVals = [-1.0051469877240551e-02, 3.6296501168410337e-02, -5.6312216296436068e-03];
-	rgbIntrinsicVals = [5.1997666258124059e+02, 0, 3.2035780640775630e+02, 0, 5.1906823659381246e+02, 2.5225475675063598e+02, 0, 0, 1];
-	rgbDistortionVals =	[2.3282269533065048e-01, -9.2676911644431559e-01, 1.3785293110664286e-03, -3.0566975301827910e-03, 1.4220722610860992];
-	dIntrinsicVals = [5.8607137222498295e+02, 0, 3.1056890695602476e+02, 0, 5.8567560309796363e+02, 2.4912535666434175e+02, 0, 0, 1];
-	dDistortionVals = [-2.1835400781694411e-01, 1.7910224568641626, 3.8831737257415703e-03, -7.9254527156540370e-04, -5.6385675132989217];
-	rotationVals = [9.9997653425563382e-01, 6.8485245163549995e-03, -1.6926322742441872e-04, -6.8493271512092896e-03, 9.9996243174913368e-01, -5.3124201579767246e-03, 1.3287462880795254e-04,  5.3134548373026313e-03, 9.9998587467125000e-01];
-	translationVals = [2.3951469877240551e-02, -3.6296501168410337e-03, -5.6312216296436068e-03];
-	
 	
 	%//=======================================================================
 	%// initialize feature scores
@@ -46,6 +33,7 @@
 	rgbImage = imread(strcat(rgbDirectory,strcat('rgb', imageName)));	
 	gray_img = rgb2gray(rgbImage);
 
+	
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
@@ -58,13 +46,6 @@
 	labels(labels == 0) = nC; %-- Normalize regions to matlab convention of 1:nC instead of 0:nC-1
 	%figure, imshow(labels,[]);
 
-	%//=======================================================================
-	%// Create Depth Table
-	%//=======================================================================
-	depthTable = single(zeros(2048, 1));
-	for i = 1:2048
-		depthTable(i) = 0.1236 * tan(i/2842.5 + 1.1863);
-	end
 	
 	%//=======================================================================
 	%// Find pairwise superpixel combinations
@@ -91,13 +72,12 @@
 		end		
 	end	
 	
+	
 	%//=======================================================================
 	%// Find average pixel intensity for each region and save Distance in cm
 	%//=======================================================================
 	regions = single(zeros(nC, 1));	
-	meterToCentimetersRatio = 100;
-		
-	
+			
 	for i=1:(nC)
 		regionSum = uint64(0);
 		region_idx = find(labels==i);
@@ -111,7 +91,6 @@
 			regions(i, 1) = 0;
 		end
 	end
-
 
 	
 	%//=======================================================================
@@ -196,31 +175,6 @@
 
 	%figure, imshow(holes);
 
-	%//=======================================================================
-	%// Find Grayscale Contrast Value for Low Regions
-	%//=======================================================================
-	%figure, imshow(gray_img, []);
-	rbgRegionContrast=[];
-	for i = 1:length(holeList)
-		rgbRegionSum = uint64(0);
-		region_idx = find(labels==i);
-		for j=1:length(region_idx)
-			rgbRegionSum = uint64(gray_img(region_idx(j))) + rgbRegionSum;
-		end
-		rbgRegionContrast(i,1) = rgbRegionSum/length(region_idx);	
-	end
-	
-
-	%//=======================================================================
-	%// Find Difference of Candidate Region Area and Boundary Box Area
-	%//=======================================================================
-	aspectRatio=[];
-	boundingBoxArea=[];
-	for i = 1:length(holeList)	
-		[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
-		boundingBoxArea(i,1) = (max(rows)-min(rows))*(max(cols)-min(cols));
-		aspectRatio(i,1)= boundingBoxArea(i,1) - length(find(labels==holeList(i)));
-	end
 
 	%//=======================================================================
 	%// Find Ratio of Region Area to Perimeter
@@ -281,35 +235,41 @@
 		principleAxis2(i,1) = 2* max(abs(B (2,:)));
 	end
 	
-
-	%//=======================================================================
-	%// Find Minimum Width/Height
-	%//=======================================================================
-	minWidth=[];
-	for i = 1:length(holeList)	
-		[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
-		holeWidth = (max(rows)-min(rows));
-		holeHeight = (max(cols)-min(cols));
-		minWidth(i,1)= min(holeWidth, holeHeight);
-	end
+	%scoring function
+	widthScore(i,1) = 0; 
 
 	
 	%//=======================================================================
+	%// Find Difference of Candidate Region Area and Boundary Box Area
+	%//=======================================================================
+	aspectRatio=[];
+	boundingBoxArea=[];
+	for i = 1:length(holeList)	
+		[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
+		boundingBoxArea(i,1) = (max(rows)-min(rows))*(max(cols)-min(cols));
+		aspectRatio(i,1)= boundingBoxArea(i,1) - length(find(labels==holeList(i)));
+	end	
+	
+
+	%//=======================================================================
+	%// Find Grayscale Contrast Value for Low Regions
+	%//=======================================================================
+	%figure, imshow(gray_img, []);
+	rbgRegionContrast=[];
+	for i = 1:length(holeList)
+		rgbRegionSum = uint64(0);
+		region_idx = find(labels==i);
+		for j=1:length(region_idx)
+			rgbRegionSum = uint64(gray_img(region_idx(j))) + rgbRegionSum;
+		end
+		rbgRegionContrast(i,1) = rgbRegionSum/length(region_idx);	
+	end
+		
+
+	%//=======================================================================
 	%// Calculate Detection Scores
 	%//=======================================================================
-	for i = 1:length(holeList)
-		if minWidth(i,1) > 150
-			widthScore(i,1) = 0.2; 
-		elseif minWidth(i,1) > 150
-			widthScore(i,1) = 0.15; 
-		elseif minWidth(i,1) > 100
-			widthScore(i,1) = 0.1; 
-		elseif minWidth(i,1) > 50
-			widthScore(i,1) = 0.05; 
-		else
-			widthScore(i,1) = 0; 
-		end
-		
+	for i = 1:length(holeList)	
 		if (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.55))
 			aspectRatioScore(i,1) = 0.05;
 		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.45))
