@@ -177,17 +177,15 @@
 
 
 	%//=======================================================================
-	%// Find Ratio of Region Area to Perimeter
+	%// Find Primary Axes of Regions
 	%//=======================================================================
-	perimAreaRatio=[];
-	for i = 1:length(holeList)			
-		perim = length(find(bwperim(labels==holeList(i))>0));		
-		perimAreaRatio(i,1)=perim/length(find(labels==holeList(i)));
-	
+
+	for i = 1:nC
+
 		%-- Create list of rows/cols coordinates for perimeter of detection
 		se90 = strel('line', 2, 90);
 		se0 = strel('line', 2, 0);
-		dilatedPerim = imdilate(labels==holeList(i), [se90 se0]);
+		dilatedPerim = imdilate(labels==i, [se90 se0]);
 		[r c ] = find(bwperim(dilatedPerim) > 0);
 		
 		%--filter depth data around the perimeter using standard deviation
@@ -233,10 +231,11 @@
 		B = Uprime'*A;
 		principleAxis1(i,1) = 2* max(abs(B (1,:)));
 		principleAxis2(i,1) = 2* max(abs(B (2,:)));
+
+		%scoring function
+		widthScore(i,1) = 0; 
+		
 	end
-	
-	%scoring function
-	widthScore(i,1) = 0; 
 
 	
 	%//=======================================================================
@@ -244,10 +243,10 @@
 	%//=======================================================================
 	aspectRatio=[];
 	boundingBoxArea=[];
-	for i = 1:length(holeList)	
-		[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
+	for i = 1:nC	
+		[rows cols] = ind2sub(size(img), find(labels==i));
 		boundingBoxArea(i,1) = (max(rows)-min(rows))*(max(cols)-min(cols));
-		aspectRatio(i,1)= boundingBoxArea(i,1) - length(find(labels==holeList(i)));
+		aspectRatio(i,1)= boundingBoxArea(i,1) - length(find(labels==i));
 	end	
 	
 
@@ -256,11 +255,13 @@
 	%//=======================================================================
 	%figure, imshow(gray_img, []);
 	rbgRegionContrast=[];
-	for i = 1:length(holeList)
+	YCBCR = rgb2ycbcr(rgbImage);
+	Y = YCBCR(:, :, 1);
+	for i = 1:nC
 		rgbRegionSum = uint64(0);
 		region_idx = find(labels==i);
 		for j=1:length(region_idx)
-			rgbRegionSum = uint64(gray_img(region_idx(j))) + rgbRegionSum;
+			rgbRegionSum = uint64(Y(region_idx(j))) + rgbRegionSum;
 		end
 		rbgRegionContrast(i,1) = rgbRegionSum/length(region_idx);	
 	end
@@ -269,7 +270,7 @@
 	%//=======================================================================
 	%// Calculate Detection Scores
 	%//=======================================================================
-	for i = 1:length(holeList)	
+	for i = 1:nC	
 		if (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.55))
 			aspectRatioScore(i,1) = 0.05;
 		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.45))
@@ -300,9 +301,9 @@
 	outputDirectory = strcat(baseDirectory, 'output/output');
 	M ={};
 	%figure, imshow(holes), colormap(gray), axis off, hold on
-	for i = 1:length(detectionScore)	
+	for i = 1:nC	
 		if detectionScore > 0
-			[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
+			[rows cols] = ind2sub(size(img), find(labels==i));
 	%		rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 4, 'EdgeColor','g');
 			M{i, 1} = frameNumber;
 			M{i, 2} = min(cols);
