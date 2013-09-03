@@ -5,8 +5,8 @@
 	clear all;
 	%frameNumber='480';
 	%baseDirectory='data/SSRR2013/
-	frameNumber='z_000000';
-	baseDirectory='data/openni_test/'; 
+	frameNumber='000364';
+	baseDirectory='data/openni_data/'; 
 	frameNumber		
 
 	%//=======================================================================
@@ -34,18 +34,22 @@
 	%//=======================================================================
 	%// Load Images
 	%//=======================================================================
-			
-	depthDirectory = strcat(baseDirectory, 'depth/');
+	imageName = strcat(frameNumber, '.png');
+	depthDirectory = strcat(baseDirectory, 'metric/');
 	rgbDirectory = strcat(baseDirectory, 'rgb/');
-	depthImage = strcat(frameNumber, '_d.png');
-	rgbImage = strcat(frameNumber, '_rgb.png');
-	img = imread(strcat(depthDirectory, depthImage));
-	gray_img = rgb2gray(imread(strcat(rgbDirectory, rgbImage)));
+	xImage = imread(strcat(depthDirectory,strcat('x_', imageName)));
+	yImage = imread(strcat(depthDirectory,strcat('y_', imageName)));
+	
+	zImage = imread(strcat(depthDirectory,strcat('z_', imageName)));
+	img = zImage;
+	
+	rgbImage = imread(strcat(rgbDirectory,strcat('rgb', imageName)));	
+	gray_img = rgb2gray(rgbImage);
 
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 10; % nC is the target number of superpixels.
+	nC = 20; % nC is the target number of superpixels.
 	lambda_prime = 0.5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -102,7 +106,7 @@
 		end
 		
 		if regionSum ~=0
-			regions(i, 1) = depthTable(regionSum/length(region_idx))*meterToCentimetersRatio;
+			regions(i, 1) = regionSum/length(region_idx);
 		else
 			regions(i, 1) = 0;
 		end
@@ -233,41 +237,37 @@
 		[r c ] = find(bwperim(dilatedPerim) > 0);
 		
 		%--filter depth data around the perimeter using standard deviation
+		tempZ=[];
 		for j = 1:length(r)		
-			tempZ(j,1) = depthTable(img(r(j), c(j)));			
+			tempZ(j,1) = zImage(r(j), c(j));
 		end		
-		stdZ=std(tempZ);
-		medianZ=median(tempZ);
+		
+		stdZ=std(double(tempZ));
+		medianZ=median(double(tempZ));
 		count = 1;
+		x=[];
+		y=[];
+		z=[];
 		for j= 1:length(tempZ)
 			if abs(tempZ(j)-medianZ) < stdZ
 				%--add to list
 				z(count,1) = tempZ(j);
-				x(count,1) = ((c(j)- dIntrinsicVals(3))*z(count)/dIntrinsicVals(1));
-				y(count,1) = ((r(j)- dIntrinsicVals(6))*z(count)/dIntrinsicVals(5));			
+				x(count,1) = xImage(r(j), c(j));
+				y(count,1) = yImage(r(j), c(j));			
 				count=count+1;
 			end
 		end
+		
+		x=double(x);
+		y=double(y);
+		z=double(z);
 		
 		% draw data
 		%figure, plot3( x, y, z, '.r' );
 		%figure, plot( x, y, '.r' );
 		%figure, hist(z);
 		
-		
-		%-- subtract mean from x, y, z 
-		meanX=mean(x(:));
-		meanY=mean(y(:));
-		meanZ=mean(z(:));
-		
-		for j=j:length(x)
-			x(j,1)= x-meanX;
-			y(j,1)= y-meanY;
-			z(j,1)= z-meanZ;
-		end
-		
-
-		%find covariance matrix
+		%find covariance matrix  (cov will subtract the mean (line 93 in cov.m file))
 		C = cov([x y z]);
 		
 		%find C = UDU' using single variable decomposition
@@ -277,8 +277,8 @@
 		A = [x y z]';
 		Uprime = U(:,1:2);
 		B = Uprime'*A;
-		principleAxis1(j,1) = 2* max(abs(B (1,:)));
-		principleAxis2(j,1) = 2* max(abs(B (2,:)));
+		principleAxis1(i,1) = 2* max(abs(B (1,:)));
+		principleAxis2(i,1) = 2* max(abs(B (2,:)));
 	end
 	
 
@@ -344,7 +344,7 @@
 		if detectionScore > 0
 			[rows cols] = ind2sub(size(img), find(labels==holeList(i)));
 	%		rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 4, 'EdgeColor','g');
-			M{i, 1} = depthImage;
+			M{i, 1} = frameNumber;
 			M{i, 2} = min(cols);
 			M{i, 3} = min(rows);
 			M{i, 4} = (max(cols)-min(cols));
