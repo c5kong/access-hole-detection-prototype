@@ -3,10 +3,8 @@
 	close all;
 	clc;
 	clear all;
-	%frameNumber='480';
-	%baseDirectory='data/SSRR2013/
-	frameNumber='z_000000';
-	baseDirectory='data/openni_test/'; 
+	frameNumber='480';
+	baseDirectory='data/SSRR2013/
 	frameNumber		
 
 	%//=======================================================================
