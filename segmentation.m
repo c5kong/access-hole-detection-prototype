@@ -44,13 +44,25 @@
 
 	[labels] = mex_ers(255*double(img)/double(max(img(:))),nC);%-- Call the mex function for superpixel segmentation\
 	labels(labels == 0) = nC; %-- Normalize regions to matlab convention of 1:nC instead of 0:nC-1
+		
+	[height width] = size(labels);
+	[bmap] = seg2bmap(labels,width,height);
+	bmapOnImg = grey_img;
+	idx = find(bmap>0);
+	timg = grey_img;
+	timg(idx) = 255;
+	bmapOnImg(:,:,2) = timg;
+	bmapOnImg(:,:,1) = grey_img;
+	bmapOnImg(:,:,3) = grey_img;
+	%figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	
 	%//=======================================================================
 	%// Find pairwise superpixel combinations
 	%//=======================================================================
-
+	
+	%--(In Progress)
 	count = 1;
 	regionList=[];
 	for i=1:nC
@@ -74,7 +86,7 @@
 	
 	
 	%//=======================================================================
-	%// Find average pixel intensity for each region and save Distance in cm
+	%// Find average distance for each region (mm)
 	%//=======================================================================
 	regions = single(zeros(nC, 1));	
 			
@@ -96,7 +108,6 @@
 	%//=======================================================================
 	%// Find neighbours
 	%//=======================================================================
-
 	neighbours = zeros(nC, nC);
 	for i=1:nC
 		for j=1:nC
@@ -112,13 +123,14 @@
 		end		
 	end
 
+	
 	%//=======================================================================
 	%// Find Lowest Regions
 	%//=======================================================================
-
+	maxDepth = 4000; %-- 4 meters
+	minDepth = 200; %-- 20cm
 	for i=1:nC
 		flag = 0; %-- set to false
-		depthScore(i,1) = 0;
 		closestNeighbour = regions(i);
 		numNeighbours = 0;
 		for j=1:nC
@@ -137,30 +149,14 @@
 			end		
 		end
 		
-		if flag == 1			
-			if closestNeighbour > 20 %minimum distance in cm
-				if closestNeighbour > 110
-					depthScore(i,1) = 0.50;
-				elseif closestNeighbour > 100
-					depthScore(i,1) = 0.45;
-				elseif closestNeighbour > 90
-					depthScore(i,1) = 0.4;
-				elseif closestNeighbour > 80
-					depthScore(i,1) = 0.35;
-				elseif closestNeighbour > 70
-					depthScore(i,1) = 0.3;
-				elseif closestNeighbour > 60
-					depthScore(i,1) = 0.25;
-				elseif closestNeighbour > 50
-					depthScore(i,1) = 0.2;
-				elseif closestNeighbour > 40
-					depthScore(i,1) = 0.15;
-				elseif closestNeighbour > 30
-					depthScore(i,1) = 0.1;
-				else
-					depthScore(i,1) = 0.05;					
-				end					
-			end
+		%--Calculate relative depth score
+		depthScore(i,1) = 0;
+		if flag == 1					
+			if closestNeighbour > minDepth && closestNeighbour < maxDepth 
+				depthScore(i,1) = closestNeighbour/(maxDepth-minDepth);
+			elseif closestNeighbour > maxDepth
+				depthScore(i,1) = 1;
+			end						
 		end	
 	end
 
@@ -168,31 +164,33 @@
 	%//=======================================================================
 	%// Find Primary Axes of Regions
 	%//=======================================================================
-
 	for i = 1:nC
-
 		%-- Create list of rows/cols coordinates for perimeter of detection
-		se90 = strel('line', 2, 90);
-		se0 = strel('line', 2, 0);
+		se90 = strel('line', 10, 90);
+		se0 = strel('line', 10, 0);
 		dilatedPerim = imdilate(labels==i, [se90 se0]);
 		[r c ] = find(bwperim(dilatedPerim) > 0);
 		
 		%--filter depth data around the perimeter using standard deviation
-		tempZ=[];
-		for j = 1:length(r)		
-			tempZ(j,1) = zImage(r(j), c(j));
+		totalZPoints=[];
+		k=1;
+		for j = 1:length(r)	
+			if zImage(r(j), c(j)) ~= 0
+				totalZPoints(k,1) = zImage(r(j), c(j));
+				k=k+1;
+			end			
 		end		
 		
-		stdZ=std(double(tempZ));
-		medianZ=median(double(tempZ));
+		stdZ=std(double(totalZPoints));
+		medianZ=median(double(totalZPoints));
 		count = 1;
 		x=[];
 		y=[];
 		z=[];
-		for j= 1:length(tempZ)
-			if abs(tempZ(j)-medianZ) < stdZ
+		for j= 1:length(totalZPoints)
+			if abs(totalZPoints(j)-medianZ) < (stdZ*0.5)
 				%--add to list
-				z(count,1) = tempZ(j);
+				z(count,1) = totalZPoints(j);
 				x(count,1) = xImage(r(j), c(j));
 				y(count,1) = yImage(r(j), c(j));			
 				count=count+1;
@@ -206,7 +204,7 @@
 		% draw data
 		%figure, plot3( x, y, z, '.r' );
 		%figure, plot( x, y, '.r' );
-		%figure, hist(z);
+		
 		
 		%find covariance matrix  (cov will subtract the mean (line 93 in cov.m file))
 		C = cov([x y z]);
@@ -221,6 +219,7 @@
 		principleAxis1(i,1) = 2* max(abs(B (1,:)));
 		principleAxis2(i,1) = 2* max(abs(B (2,:)));
 
+		%TODO - Fix this score
 		%scoring function
 		widthScore(i,1) = 0; 
 		
@@ -238,6 +237,18 @@
 		aspectRatio(i,1)= boundingBoxArea(i,1) - length(find(labels==i));
 	end	
 	
+	%TODO - Fix this score
+	for i = 1:nC	
+		if (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.55))
+			aspectRatioScore(i,1) = 0.05;
+		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.45))
+			aspectRatioScore(i,1) = 0.10;
+		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.35))
+			aspectRatioScore(i,1) = 0.15;
+		else
+			aspectRatioScore(i,1) = 0;
+		end		
+	end	
 
 	%//=======================================================================
 	%// Find Grayscale Contrast Value for Low Regions
@@ -254,22 +265,9 @@
 		end
 		rbgRegionContrast(i,1) = rgbRegionSum/length(region_idx);	
 	end
-		
 
-	%//=======================================================================
-	%// Calculate Detection Scores
-	%//=======================================================================
-	for i = 1:nC	
-		if (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.55))
-			aspectRatioScore(i,1) = 0.05;
-		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.45))
-			aspectRatioScore(i,1) = 0.10;
-		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.35))
-			aspectRatioScore(i,1) = 0.15;
-		else
-			aspectRatioScore(i,1) = 0;
-		end
-		
+	%TODO - Fix this score
+	for i = 1:nC			
 		if (rbgRegionContrast(i,1) < 100)
 			contrastScore(i,1) = 0.15;
 		elseif (rbgRegionContrast(i,1) < 200)
@@ -279,7 +277,12 @@
 		else
 			contrastScore(i,1) = 0.0;
 		end
-		
+	end	
+
+	%//=======================================================================
+	%// Calculate Detection Scores
+	%//=======================================================================
+	for i = 1:nC		
 		detectionScore(i,1) = depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1);
 	end
 
@@ -287,18 +290,16 @@
 	%//=======================================================================
 	%// Display
 	%//=======================================================================
-	outputDirectory = strcat(baseDirectory, 'output/output');
-	M ={};
-	
 	scoreVisualization = labels;
 	for i = 1:nC
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
-	
-	
 	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	
+	M ={};	
 	for i = 1:nC	
 		if detectionScore(i,1) > .6		
+			i
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 			M{i, 1} = frameNumber;
@@ -310,22 +311,13 @@
 			
 		end
 	end
+	outputDirectory = strcat(baseDirectory, 'output/output');
 	%dlmcell(strcat(outputDirectory, '.csv'), M, ',', '-a');
 	%f=getframe(gca);
 	%[X, map] = frame2im(f);
 	%imwrite(X, strcat(outputDirectory, depthImage));
 	%hold off;
 
-	[height width] = size(labels);
-	[bmap] = seg2bmap(labels,width,height);
-	bmapOnImg = grey_img;
-	idx = find(bmap>0);
-	timg = grey_img;
-	timg(idx) = 255;
-	bmapOnImg(:,:,2) = timg;
-	bmapOnImg(:,:,1) = grey_img;
-	bmapOnImg(:,:,3) = grey_img;
-	figure, imshow(bmapOnImg,[]);
 	
 %end
 
