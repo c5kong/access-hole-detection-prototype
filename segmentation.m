@@ -190,17 +190,21 @@
 	%//=======================================================================
 	for i = 1:nC
 		%-- Create list of rows/cols coordinates for perimeter of detection
-		se90 = strel('line', 10, 90);
-		se0 = strel('line', 10, 0);
+		se90 = strel('line', 2, 90);
+		se0 = strel('line', 2, 0);
 		dilatedPerim = imdilate(labels==i, [se90 se0]);
 		[r c ] = find(bwperim(dilatedPerim) > 0);
 		
 		%--filter depth data around the perimeter using standard deviation
 		totalZPoints=[];
 		k=1;
+		r2=[];
+		c2=[];		
 		for j = 1:length(r)	
 			if zImage(r(j), c(j)) ~= 0
 				totalZPoints(k,1) = zImage(r(j), c(j));
+				r2(k,1) = r(j);
+				c2(k,1) = c(j);
 				k=k+1;
 			end			
 		end		
@@ -212,11 +216,11 @@
 		y=[];
 		z=[];
 		for j= 1:length(totalZPoints)
-			if abs(totalZPoints(j)-medianZ) < (stdZ*0.5)
+			if abs(totalZPoints(j)-medianZ) < (stdZ*0.5)			
 				%--add to list
 				z(count,1) = totalZPoints(j);
-				x(count,1) = xImage(r(j), c(j));
-				y(count,1) = yImage(r(j), c(j));			
+				x(count,1) = xImage(r2(j), c2(j));
+				y(count,1) = yImage(r2(j), c2(j));			
 				count=count+1;
 			end
 		end
@@ -240,8 +244,8 @@
 		A = [x y z]';
 		Uprime = U(:,1:2);
 		B = Uprime'*A;
-		principleAxis1(i,1) = 2* max(abs(B (1,:)));
-		principleAxis2(i,1) = 2* max(abs(B (2,:)));
+		principleAxis1(i,1) = max(B (1,:))-min(B (1,:));
+		principleAxis2(i,1) = max(B (2,:))-min(B (2,:));
 
 		%TODO - Fix this score
 		%scoring function
