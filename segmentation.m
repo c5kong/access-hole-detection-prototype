@@ -21,17 +21,41 @@
 	%//=======================================================================
 	%// Load Images
 	%//=======================================================================
+	
+	%--Code to read in IMG
 	imageName = strcat(frameNumber, '.png');
 	depthDirectory = strcat(baseDirectory, 'metric/');
 	rgbDirectory = strcat(baseDirectory, 'rgb/');
-	xImage = imread(strcat(depthDirectory,strcat('x_', imageName)));
-	yImage = imread(strcat(depthDirectory,strcat('y_', imageName)));
-	
-	zImage = imread(strcat(depthDirectory,strcat('z_', imageName)));
-	img = zImage;
-	
+	%xImage = imread(strcat(depthDirectory,strcat('x_', imageName)));
+	%yImage = imread(strcat(depthDirectory,strcat('y_', imageName)));
+	%zImage = imread(strcat(depthDirectory,strcat('z_', imageName)));
 	rgbImage = imread(strcat(rgbDirectory,strcat('rgb_', imageName)));	
 	grey_img = rgb2gray(rgbImage);
+
+	fid = fopen('x_000060.x');
+	x = fread(fid, inf, '*short');	
+	fclose(fid);
+	xImage = vec2mat(x,640);
+	
+	fid = fopen('y_000060.y');
+	y = fread(fid, inf, '*short');	
+	fclose(fid);
+	yImage = vec2mat(y,640);
+	
+	fid = fopen('z_000060.z');
+	z = fread(fid, inf, '*short');	
+	fclose(fid);
+	zImage = vec2mat(z,640);
+	
+	%-- Code to read in Ascii
+	%>> x = textread('x_000060.txt','%d');
+	%>> y = textread('y_000060.txt','%d');
+	%>> z = textread('z_000060.txt','%d');
+	%>> x=x';
+	%>> y=y';
+	% z=z';
+
+	img = zImage;		
 
 	
 	%//=======================================================================
