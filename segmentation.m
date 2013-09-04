@@ -3,7 +3,7 @@
 	close all;
 	clc;
 	clear all;
-	frameNumber='000364';
+	frameNumber='000030';
 	baseDirectory='data/openni_data/'; 
 	frameNumber		
 
@@ -31,18 +31,18 @@
 	img = zImage;
 	
 	rgbImage = imread(strcat(rgbDirectory,strcat('rgb', imageName)));	
-	gray_img = rgb2gray(rgbImage);
+	grey_img = rgb2gray(rgbImage);
 
 	
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 20; % nC is the target number of superpixels.
-	lambda_prime = 0.5;
+	nC = 50; % nC is the target number of superpixels.
+	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
 
-	[labels] = mex_ers(double(img),nC);%-- Call the mex function for superpixel segmentation\
+	[labels] = mex_ers(255*double(img)/double(max(img(:))),nC);%-- Call the mex function for superpixel segmentation\
 	labels(labels == 0) = nC; %-- Normalize regions to matlab convention of 1:nC instead of 0:nC-1
 	%figure, imshow(labels,[]);
 
@@ -121,6 +121,7 @@
 	holeList =[];
 	for i=1:nC
 		flag = 0; %-- set to false
+		depthScore(i,1) = 0;
 		closestNeighbour = regions(i);
 		numNeighbours = 0;
 		for j=1:nC
@@ -253,7 +254,7 @@
 	%//=======================================================================
 	%// Find Grayscale Contrast Value for Low Regions
 	%//=======================================================================
-	%figure, imshow(gray_img, []);
+	%figure, imshow(grey_img, []);
 	rbgRegionContrast=[];
 	YCBCR = rgb2ycbcr(rgbImage);
 	Y = YCBCR(:, :, 1);
@@ -300,11 +301,12 @@
 	%//=======================================================================
 	outputDirectory = strcat(baseDirectory, 'output/output');
 	M ={};
-	%figure, imshow(holes), colormap(gray), axis off, hold on
+	figure, imshow(labels, []), colormap(gray), axis off, hold on
 	for i = 1:nC	
-		if detectionScore > 0
+		if detectionScore(i,1) > .6
+		i
 			[rows cols] = ind2sub(size(img), find(labels==i));
-	%		rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 4, 'EdgeColor','g');
+			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 			M{i, 1} = frameNumber;
 			M{i, 2} = min(cols);
 			M{i, 3} = min(rows);
@@ -320,7 +322,16 @@
 	%imwrite(X, strcat(outputDirectory, depthImage));
 	%hold off;
 
-	
+	[height width] = size(labels);
+	[bmap] = seg2bmap(labels,width,height);
+	bmapOnImg = grey_img;
+	idx = find(bmap>0);
+	timg = grey_img;
+	timg(idx) = 255;
+	bmapOnImg(:,:,2) = timg;
+	bmapOnImg(:,:,1) = grey_img;
+	bmapOnImg(:,:,3) = grey_img;
+	figure, imshow(bmapOnImg,[]);
 	
 %end
 
