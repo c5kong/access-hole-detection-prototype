@@ -37,7 +37,7 @@
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 50; % nC is the target number of superpixels.
+	nC = 25; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -116,9 +116,6 @@
 	%// Find Lowest Regions
 	%//=======================================================================
 
-	holes = zeros(size(img));
-	count = 0;	
-	holeList =[];
 	for i=1:nC
 		flag = 0; %-- set to false
 		depthScore(i,1) = 0;
@@ -142,13 +139,6 @@
 		
 		if flag == 1			
 			if closestNeighbour > 20 %minimum distance in cm
-			
-				count = count + 1;
-				holeList(count, 1) = i;
-				tempImage = labels == i;
-				holes = holes | tempImage;		
-				
-
 				if closestNeighbour > 110
 					depthScore(i,1) = 0.50;
 				elseif closestNeighbour > 100
@@ -174,9 +164,7 @@
 		end	
 	end
 
-	%figure, imshow(holes);
-
-
+	
 	%//=======================================================================
 	%// Find Primary Axes of Regions
 	%//=======================================================================
@@ -301,10 +289,16 @@
 	%//=======================================================================
 	outputDirectory = strcat(baseDirectory, 'output/output');
 	M ={};
-	figure, imshow(labels, []), colormap(gray), axis off, hold on
+	
+	scoreVisualization = labels;
+	for i = 1:nC
+		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
+	end
+	
+	
+	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 	for i = 1:nC	
-		if detectionScore(i,1) > .6
-		i
+		if detectionScore(i,1) > .6		
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 			M{i, 1} = frameNumber;
