@@ -3,7 +3,7 @@
 	close all;
 	clc;
 	clear all;
-	frameNumber='000030';
+	frameNumber='2000060';
 	baseDirectory='data/openni_data/'; 
 	frameNumber		
 
@@ -30,7 +30,7 @@
 	zImage = imread(strcat(depthDirectory,strcat('z_', imageName)));
 	img = zImage;
 	
-	rgbImage = imread(strcat(rgbDirectory,strcat('rgb', imageName)));	
+	rgbImage = imread(strcat(rgbDirectory,strcat('rgb_', imageName)));	
 	grey_img = rgb2gray(rgbImage);
 
 	
