@@ -251,39 +251,31 @@
 	end	
 
 	%//=======================================================================
-	%// Find Grayscale Contrast Value for Low Regions
+	%// Find Absolute Brightness Intensity Score
 	%//=======================================================================
-	%figure, imshow(grey_img, []);
-	rbgRegionContrast=[];
+	maxIntensity = 255;
+	brightnessIntensity=[];
 	YCBCR = rgb2ycbcr(rgbImage);
 	Y = YCBCR(:, :, 1);
 	for i = 1:nC
+		%-- Calculate region brightness average
 		rgbRegionSum = uint64(0);
 		region_idx = find(labels==i);
 		for j=1:length(region_idx)
 			rgbRegionSum = uint64(Y(region_idx(j))) + rgbRegionSum;
 		end
-		rbgRegionContrast(i,1) = rgbRegionSum/length(region_idx);	
-	end
-
-	%TODO - Fix this score
-	for i = 1:nC			
-		if (rbgRegionContrast(i,1) < 100)
-			contrastScore(i,1) = 0.15;
-		elseif (rbgRegionContrast(i,1) < 200)
-			contrastScore(i,1) = 0.10;
-		elseif (rbgRegionContrast(i,1) < 300)
-			contrastScore(i,1) = 0.05;
-		else
-			contrastScore(i,1) = 0.0;
-		end
+		brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
+	
+		%Calculate Brightness Score
+		contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
 	end	
 
+	
 	%//=======================================================================
 	%// Calculate Detection Scores
 	%//=======================================================================
 	for i = 1:nC		
-		detectionScore(i,1) = depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1);
+		detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1))/4;
 	end
 
 	
