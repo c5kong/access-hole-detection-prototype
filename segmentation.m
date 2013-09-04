@@ -3,7 +3,7 @@
 	close all;
 	clc;
 	clear all;
-	frameNumber='2000060';
+	frameNumber='2_000120';
 	baseDirectory='data/openni_data/'; 
 	frameNumber		
 
@@ -32,17 +32,18 @@
 	rgbImage = imread(strcat(rgbDirectory,strcat('rgb_', imageName)));	
 	grey_img = rgb2gray(rgbImage);
 
-	fid = fopen('x_000060.x');
+	binaryName = strcat(frameNumber, '.dat');	
+	fid = fopen(strcat(depthDirectory,strcat('x_', binaryName)));
 	x = fread(fid, inf, '*short');	
 	fclose(fid);
 	xImage = vec2mat(x,640);
 	
-	fid = fopen('y_000060.y');
+	fid = fopen(strcat(depthDirectory,strcat('y_', binaryName)));
 	y = fread(fid, inf, '*short');	
 	fclose(fid);
 	yImage = vec2mat(y,640);
 	
-	fid = fopen('z_000060.z');
+	fid = fopen(strcat(depthDirectory,strcat('z_', binaryName)));
 	z = fread(fid, inf, '*short');	
 	fclose(fid);
 	zImage = vec2mat(z,640);
@@ -78,7 +79,7 @@
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	%figure, imshow(bmapOnImg,[]);
+	figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	
