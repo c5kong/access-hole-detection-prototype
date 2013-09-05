@@ -12,7 +12,7 @@ function [ X ] = groundTruth(imageName, directory)
 	%//=======================================================================
 	%// Output File Name
 	%//=======================================================================
-	filename = strcat('groundTruth.csv');
+	filename = strcat('groundTruth2.csv');
 
 	%//=======================================================================
 	%// Find Region
