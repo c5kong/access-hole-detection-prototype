@@ -50,7 +50,7 @@ function [ X ] = evaluate(detectionScore)
 				gtRegion(1, 1) = groundTruthPosRegionsX(j);
 				gtRegion(1, 2) = groundTruthPosRegionsY(j);
 				gtRegion(1, 3) = groundTruthPosRegionsW(j);
-				gtRegion(1, 4) = groundTruthPosRegionsW(j);
+				gtRegion(1, 4) = groundTruthPosRegionsH(j);
 				
 				gtArea = groundTruthPosRegionsW(j) * groundTruthPosRegionsW(j);
 
