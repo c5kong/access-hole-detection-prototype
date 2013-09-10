@@ -3,7 +3,7 @@
 	close all;
 	clc;
 	clear all;
-	frameNumber='2_000120';
+	frameNumber='12_000180';
 	baseDirectory='data/openni_data/'; 
 	frameNumber		
 
@@ -187,8 +187,11 @@
 
 	
 	%//=======================================================================
-	%// Find Primary Axes of Regions
+	%// Find Principle Axes of Regions
 	%//=======================================================================
+	minHumanWidth = 200;  %200mm = 20cm
+	minHumanLength = 610; %610mm = 61cm
+	
 	for i = 1:nC
 		%-- Create list of rows/cols coordinates for perimeter of detection
 		se90 = strel('line', 2, 90);
@@ -237,21 +240,30 @@
 		
 		%find covariance matrix  (cov will subtract the mean (line 93 in cov.m file))
 		C = cov([x y z]);
-		
-		%find C = UDU' using single variable decomposition
-		[U S V] = svd(C);
-		
-		%project x and y onto axes and take the max
-		A = [x y z]';
-		Uprime = U(:,1:2);
-		B = Uprime'*A;
-		principleAxis1(i,1) = max(B (1,:))-min(B (1,:));
-		principleAxis2(i,1) = max(B (2,:))-min(B (2,:));
+		Uprime=[];
+		[m n] = size(C);
+		if isnan(C) | m~=3 | n~=3
+			principleAxis(i,1) = 0;
+			principleAxis(i,2) = 0;
+		else
+			%find C = UDU' using single variable decomposition
+			[U S V] = svd(C);
+			
+			%project x and y onto axes and take the max
+			A = [x y z]';
+			Uprime = U(:,1:2);
+			B = Uprime'*A;
+			principleAxis(i,1) = max(B (1,:))-min(B (1,:));
+			principleAxis(i,2) = max(B (2,:))-min(B (2,:));
+		end
 
-		%TODO - Fix this score
-		%scoring function
-		widthScore(i,1) = 0; 
-		
+		%Calculate Principle Axes Score	
+		if min(principleAxis(i, :)) > minHumanWidth & max(principleAxis(i, :)) > minHumanLength
+			widthScore(i,1) = 1; 
+		else
+			widthScore(i,1) = 0; 
+		end
+
 	end
 
 	
@@ -263,20 +275,10 @@
 	for i = 1:nC	
 		[rows cols] = ind2sub(size(img), find(labels==i));
 		boundingBoxArea(i,1) = (max(rows)-min(rows))*(max(cols)-min(cols));
-		aspectRatio(i,1)= boundingBoxArea(i,1) - length(find(labels==i));
-	end	
+		aspectRatio(i,1)= length(find(labels==i))/boundingBoxArea(i,1) ;
 	
-	%TODO - Fix this score
-	for i = 1:nC	
-		if (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.55))
-			aspectRatioScore(i,1) = 0.05;
-		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.45))
-			aspectRatioScore(i,1) = 0.10;
-		elseif (aspectRatio(i,1) < (boundingBoxArea(i,1) * 0.35))
-			aspectRatioScore(i,1) = 0.15;
-		else
-			aspectRatioScore(i,1) = 0;
-		end		
+		%Calculate Aspect Ratio Score
+		aspectRatioScore(i,1) = 1-aspectRatio(i,1);
 	end	
 
 	%//=======================================================================
@@ -304,7 +306,7 @@
 	%// Calculate Detection Scores
 	%//=======================================================================
 	for i = 1:nC		
-		detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1))/4;
+		detectionScore(i,1) = (depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * contrastScore(i,1));
 	end
 
 	
@@ -319,8 +321,7 @@
 	
 	M ={};	
 	for i = 1:nC	
-		if detectionScore(i,1) > .6		
-			i
+		if detectionScore(i,1) > .58		
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 			M{i, 1} = frameNumber;
