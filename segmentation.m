@@ -1,12 +1,12 @@
-%function [ X ] = segmentation(frameNumber, baseDirectory)
+function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	close all;
 	clc;
-	clear all;
-	frameNumber='12_000180';
-	baseDirectory='data/openni_data/'; 
+	
+	%frameNumber='12_000180';
+	%baseDirectory='data/openni_data/'; 
+	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
-
 
 	
 	%//=======================================================================
@@ -70,7 +70,7 @@
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	figure, imshow(bmapOnImg,[]);
+	%figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	
@@ -327,24 +327,18 @@
 	%//=======================================================================
 	for i = 1:nC		
 		regionBorder(i,1) = 0;
-		region_idx = find(labels==i);
-		
-		if find(region_idx==1) ...  %--top left pixel
-			| find(region_idx==640) ...  %--top right pixel
-			| find(region_idx==306561) ... %--bottom left pixel
-			| find(region_idx==307200) %--bottom right pixel
-			regionBorder(i,1) = 1;		
-		end	
-	end	
-	
-	for i = 1:nC		
-		if regionBorder(i,1) ==0
-			%detectionScore(i,1) = (depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * contrastScore(i,1));
-			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore)/5;
-		else
+		[r c] = ind2sub(size(img), find(labels==i));		
+		if min(r) == 1 ... %--top border
+			| min(c) == 1 ... %--left border
+			| max(c) == width ... %-- right border
+			| min(r) == height %-- bottom border
+			regionBorder(i,1) = 1;	
 			detectionScore(i,1) = 0;
+		else
+			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore)/5;
+			detectionScore(i,1) = depthScore(i,1) ;
 		end
-	end
+	end	
 
 	
 	%//=======================================================================
@@ -354,30 +348,31 @@
 	for i = 1:nC
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
-	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+%	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 	
 	M ={};	
 	for i = 1:nC	
-		if detectionScore(i,1) > .58		
+		%if detectionScore(i,1) > 0.58		
 			[rows cols] = ind2sub(size(img), find(labels==i));
-			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+%			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+
 			M{i, 1} = frameNumber;
 			M{i, 2} = min(cols);
 			M{i, 3} = min(rows);
 			M{i, 4} = (max(cols)-min(cols));
 			M{i, 5} = (max(rows)-min(rows));
-			M{i, 6} = detectionScore(i,1);
-			
-		end
+			M{i, 6} = detectionScore(i,1);			
+		%end
 	end
-	outputDirectory = strcat(baseDirectory, 'output/output');
-	%dlmcell(strcat(outputDirectory, '.csv'), M, ',', '-a');
+	
 	%f=getframe(gca);
 	%[X, map] = frame2im(f);
 	%imwrite(X, strcat(outputDirectory, depthImage));
 	%hold off;
-
 	
-%end
+	%--write out CSV
+	dlmcell(strcat(outputDirectory, 'output.csv'), M, ',', '-a');
+	clear all;	
+end
 
 
