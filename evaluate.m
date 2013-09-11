@@ -1,17 +1,14 @@
-function [ X ] = evaluate(detectionScore)
+function [ X ] = evaluate(detectionThreshold)
 
 	clc;
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-	outputFile = ('output_perfectData.csv');
-	gtFile = ('groundTruth_perfectdata.csv');
-	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-	
-	outputDirectory = ('data/SSRR2013/output/');
-	gtDirectory = ('data/SSRR2013/output/groundTruth/');
+	%//=======================================================================
+	%// Open detection output
+	%//=======================================================================
 
-
-	fileID = fopen(strcat(outputDirectory, outputFile));
+	inputFile = ('aspectRatioScore.csv');	
+	inputDirectory = ('data/openni_data/output/');
+	fileID = fopen(strcat(inputDirectory, inputFile));
 	C = textscan(fileID, '%s %d %d %d %d %f','delimiter', ',', 'EmptyValue', -Inf);
 	fclose(fileID);
 
@@ -21,6 +18,14 @@ function [ X ] = evaluate(detectionScore)
 	detectedRegionsW = int32(C{4});
 	detectedRegionsH = int32(C{5});
 	detectedRegionScore = single(C{6});
+
+	
+	%//=======================================================================
+	%// Open ground truth data
+	%//=======================================================================
+	
+	gtFile = ('groundTruth_noExt.csv');	
+	gtDirectory = ('data/openni_data/');
 
 	fileID = fopen(strcat(gtDirectory, gtFile));
 	C = textscan(fileID, '%s %d %d %d %d','delimiter', ',', 'EmptyValue', -Inf);
@@ -32,26 +37,21 @@ function [ X ] = evaluate(detectionScore)
 	groundTruthPosRegionsW = int32(C{4});
 	groundTruthPosRegionsH = int32(C{5});
 
+
+	%//=======================================================================
+	%// Evaluate
+	%//=======================================================================		
 	truePositive = 0;
 	falsePositive = 0;
 	for i = 1:length(detectedRegionsX)
 		dImg = strtrim(detectedImgs(i,:));
-		dRegion(1, 1) = detectedRegionsX(i);
-		dRegion(1, 2) = detectedRegionsY(i);
-		dRegion(1, 3) = detectedRegionsW(i);
-		dRegion(1, 4) = detectedRegionsH(i);	
-		
+		dRegion = [ detectedRegionsX(i) detectedRegionsY(i) detectedRegionsW(i) detectedRegionsH(i) ]		
 		detectedArea = detectedRegionsW(i) * detectedRegionsH(i);
 		
-		if detectedRegionScore(i) > detectionScore
-
-				for j = 1:length(groundTruthPosRegionsX)
+		if detectedRegionScore(i) > detectionThreshold
+			for j = 1:length(groundTruthPosRegionsX)
 				gtImg = strtrim(groundTruthPosImgs(j,:));
-				gtRegion(1, 1) = groundTruthPosRegionsX(j);
-				gtRegion(1, 2) = groundTruthPosRegionsY(j);
-				gtRegion(1, 3) = groundTruthPosRegionsW(j);
-				gtRegion(1, 4) = groundTruthPosRegionsH(j);
-				
+				gtRegion = [ groundTruthPosRegionsX(j) groundTruthPosRegionsY(j) groundTruthPosRegionsW(j) groundTruthPosRegionsH(j) ]
 				gtArea = groundTruthPosRegionsW(j) * groundTruthPosRegionsW(j);
 
 				if strcmp(dImg, gtImg) 			
@@ -64,11 +64,7 @@ function [ X ] = evaluate(detectionScore)
 					end			
 				end
 			end
-
-
-		end
-		
-		
+		end				
 	end	
 
 	falseNegatives = length(groundTruthPosRegionsX) - truePositive;
@@ -76,7 +72,7 @@ function [ X ] = evaluate(detectionScore)
 	recall =  truePositive/length(groundTruthPosRegionsX);%-- Recall = TP/nP,
 
 	M ={};
-	M{1, 1} = detectionScore;
+	M{1, 1} = detectionThreshold;
 	M{2, 1} = ('Precision');
 	M{2, 2} = precision;
 	M{3, 1} = ('Recall');
