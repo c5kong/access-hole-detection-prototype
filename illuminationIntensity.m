@@ -1,11 +1,9 @@
 function [ X ] = illuminationIntensity(imageName, directory)
 
-	clear all;
+
 	close all;
 	clc;
-	
-	directory='data\training data\';
-	imageName='rubble.jpg';
+
 	
 	%//=======================================================================
 	%// Load Images
@@ -87,13 +85,16 @@ function [ X ] = illuminationIntensity(imageName, directory)
 		avgIntLum=intSum/intRectArea;
 
 		extRectArea=abs(x2-x1)*abs(y2-y1);
-		avgExtLumDiff=(extSum-intSum)/(extRectArea-intRectArea);
+		avgExtLum=(extSum-intSum)/(extRectArea-intRectArea);
 		
 		M{1, 1} = imageName;
 		M{1, 2} = avgIntLum;
-		M{1, 3} = avgExtLumDiff;	
+		M{1, 3} = avgExtLum;	
+		M{1, 4} = avgExtLum-avgIntLum;	
 		dlmcell(filename, M, ',', '-a');		
 						
 	end
+	
+		clear all;
 	
 end
