@@ -336,7 +336,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			detectionScore(i,1) = 0;
 		else
 			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore)/5;
-			detectionScore(i,1) = depthScore(i,1) ;
+			detectionScore(i,1) = aspectRatioScore(i,1) ;
 		end
 	end	
 

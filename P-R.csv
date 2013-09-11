@@ -1,0 +1,133 @@
+0,
+Precision,0.054768
+Recall,1.2108
+True Positives,201
+False Positives,3469
+False Negatives,-35
+  ,
+0.05,
+Precision,0.054585
+Recall,1.2048
+True Positives,200
+False Positives,3464
+False Negatives,-34
+  ,
+0.1,
+Precision,0.054675
+Recall,1.2048
+True Positives,200
+False Positives,3458
+False Negatives,-34
+  ,
+0.15,
+Precision,0.05484
+Recall,1.2048
+True Positives,200
+False Positives,3447
+False Negatives,-34
+  ,
+0.2,
+Precision,0.05451
+Recall,1.1867
+True Positives,197
+False Positives,3417
+False Negatives,-31
+  ,
+0.25,
+Precision,0.054942
+Recall,1.1687
+True Positives,194
+False Positives,3337
+False Negatives,-28
+  ,
+0.3,
+Precision,0.05407
+Recall,1.1084
+True Positives,184
+False Positives,3219
+False Negatives,-18
+  ,
+0.35,
+Precision,0.054795
+Recall,1.0602
+True Positives,176
+False Positives,3036
+False Negatives,-10
+  ,
+0.4,
+Precision,0.051273
+Recall,0.89759
+True Positives,149
+False Positives,2757
+False Negatives,17
+  ,
+0.45,
+Precision,0.04849
+Recall,0.73494
+True Positives,122
+False Positives,2394
+False Negatives,44
+  ,
+0.5,
+Precision,0.048058
+Recall,0.59639
+True Positives,99
+False Positives,1961
+False Negatives,67
+  ,
+0.55,
+Precision,0.047619
+Recall,0.45783
+True Positives,76
+False Positives,1520
+False Negatives,90
+  ,
+0.6,
+Precision,0.054451
+Recall,0.37952
+True Positives,63
+False Positives,1094
+False Negatives,103
+  ,
+0.65,
+Precision,0.067371
+Recall,0.30723
+True Positives,51
+False Positives,706
+False Negatives,115
+  ,
+0.7,
+Precision,0.076389
+Recall,0.1988
+True Positives,33
+False Positives,399
+False Negatives,133
+  ,
+0.75,
+Precision,0.066351
+Recall,0.084337
+True Positives,14
+False Positives,197
+False Negatives,152
+  ,
+0.8,
+Precision,0.05618
+Recall,0.03012
+True Positives,5
+False Positives,84
+False Negatives,161
+  ,
+0.85,
+Precision,0.068966
+Recall,0.012048
+True Positives,2
+False Positives,27
+False Negatives,164
+  ,
+0.9,
+Precision,0
+Recall,0
+True Positives,0
+False Positives,6
+False Negatives,166
+  ,
