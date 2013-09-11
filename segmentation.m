@@ -7,15 +7,6 @@
 	baseDirectory='data/openni_data/'; 
 	frameNumber		
 
-	
-	%//=======================================================================
-	%// initialize feature scores
-	%//=======================================================================
-	depthScore =[];
-	widthScore =[];
-	aspectRatioScore =[];
-	contrastScore =[];
-	detectionScore=[];
 
 	
 	%//=======================================================================
@@ -87,8 +78,7 @@
 	%//=======================================================================
 	%// Find average distance for each region (mm)
 	%//=======================================================================
-	regions = single(zeros(nC, 1));	
-			
+	regions = single(zeros(nC, 1));				
 	for i=1:(nC)
 		regionSum = uint64(0);
 		region_idx = find(labels==i);
@@ -307,12 +297,31 @@
 	%//=======================================================================
 	%// Find Relative Brightness Intensity Score
 	%//=======================================================================
-	
+	avgBrightnessDiff = 100;%--statistically determined
+	relativeBrightness = single(zeros(nC, 1));
 	for i = 1:nC
-	
+		brightnessSum = uint64(0);
+		numNeighbours = 0;
+		for j = 1:nC
+			if neighbours(i,j) == 1
+				%avg the intensity
+				brightnessSum = uint64(brightnessIntensity(j,1)) + brightnessSum;
+				numNeighbours = numNeighbours + 1;
+			end
+		end		
+		
+		if brightnessSum ~=0
+			relativeBrightness(i, 1) = (brightnessSum/numNeighbours)-brightnessIntensity(i,1);
+		end
+		
+		if relativeBrightness(i, 1) < avgBrightnessDiff
+			relativeIntensityScore = 1;
+		else
+			relativeIntensityScore = 0;
+		end
 	end	
-	
-	
+		
+
 	%//=======================================================================
 	%// Calculate Detection Scores
 	%//=======================================================================
@@ -331,7 +340,7 @@
 	for i = 1:nC		
 		if regionBorder(i,1) ==0
 			%detectionScore(i,1) = (depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * contrastScore(i,1));
-			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1))/4;
+			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore)/5;
 		else
 			detectionScore(i,1) = 0;
 		end
