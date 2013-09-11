@@ -58,7 +58,7 @@
 
 	img = zImage;		
 
-	
+
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
@@ -83,32 +83,6 @@
 	%figure, imshow(labels,[]);
 
 	
-	%//=======================================================================
-	%// Find pairwise superpixel combinations
-	%//=======================================================================
-	
-	%--(In Progress)
-	count = 1;
-	regionList=[];
-	for i=1:nC
-		regionList(count, 1) = count;
-		count = count + 1;
-	end
-	
-	for i=1:nC    
-		for j=1:nC
-			image1 = labels == i;
-			image2 =  labels == j;
-			image3 = image1 | image2;		
-			[ L num ]  = bwlabel(image3);
-			if num == 1 & i~=j
-				regionList(count, 1) = i;
-				regionList(count, 2) = j;
-				count = count + 1;
-			end
-		end		
-	end	
-	
 	
 	%//=======================================================================
 	%// Find average distance for each region (mm)
@@ -118,6 +92,7 @@
 	for i=1:(nC)
 		regionSum = uint64(0);
 		region_idx = find(labels==i);
+
 		for j=1:length(region_idx)
 			regionSum = uint64(img(region_idx(j))) + regionSum;
 		end
@@ -148,6 +123,33 @@
 		end		
 	end
 
+	
+	%//=======================================================================
+	%// Find greedy superpixel combinations
+	%//=======================================================================
+	
+	%--TODO
+	count = 1;
+	regionList=[];
+	for i=1:nC
+		regionList(count, 1) = count;
+		count = count + 1;
+	end
+	
+	for i=1:nC    
+		for j=1:nC
+			image1 = labels == i;
+			image2 =  labels == j;
+			image3 = image1 | image2;		
+			[ L num ]  = bwlabel(image3);
+			if num == 1 & i~=j
+				regionList(count, 1) = i;
+				regionList(count, 2) = j;
+				count = count + 1;
+			end
+		end		
+	end		
+	
 	
 	%//=======================================================================
 	%// Find Lowest Regions
@@ -189,8 +191,8 @@
 	%//=======================================================================
 	%// Find Principle Axes of Regions
 	%//=======================================================================
-	minHumanWidth = 200;  %200mm = 20cm
-	minHumanLength = 610; %610mm = 61cm
+	minHumanWidth = 368;  %368mm = 36.8cm
+	minHumanLength = 655; %655mm = 65.5cm
 	
 	for i = 1:nC
 		%-- Create list of rows/cols coordinates for perimeter of detection
@@ -303,10 +305,36 @@
 
 	
 	%//=======================================================================
+	%// Find Relative Brightness Intensity Score
+	%//=======================================================================
+	
+	for i = 1:nC
+	
+	end	
+	
+	
+	%//=======================================================================
 	%// Calculate Detection Scores
 	%//=======================================================================
 	for i = 1:nC		
-		detectionScore(i,1) = (depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * contrastScore(i,1));
+		regionBorder(i,1) = 0;
+		region_idx = find(labels==i);
+		
+		if find(region_idx==1) ...  %--top left pixel
+			| find(region_idx==640) ...  %--top right pixel
+			| find(region_idx==306561) ... %--bottom left pixel
+			| find(region_idx==307200) %--bottom right pixel
+			regionBorder(i,1) = 1;		
+		end	
+	end	
+	
+	for i = 1:nC		
+		if regionBorder(i,1) ==0
+			%detectionScore(i,1) = (depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * contrastScore(i,1));
+			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1))/4;
+		else
+			detectionScore(i,1) = 0;
+		end
 	end
 
 	
