@@ -1,8 +1,8 @@
-%function [ X ] = evaluate(detectionThreshold)
+function [ X ] = evaluate(detectionThreshold)
 
 	clc;
-
-	detectionThreshold = 0.5;
+	%detectionThreshold = 0.5;
+	
 	%//=======================================================================
 	%// Open detection output
 	%//=======================================================================
@@ -108,11 +108,12 @@
 	M{7, 1} = ('  ');
 	dlmcell('P-R.csv', M, ',', '-a');
 
-	recall 
-	precision 
-	truePositive
-	falseNegatives
-	falsePositive
+	%recall 
+	%precision 
+	%truePositive
+	%falseNegatives
+	%falsePositive
 
-%end
+	clear all;
+end
 
