@@ -1,7 +1,8 @@
-function [ X ] = evaluate(detectionThreshold)
+%function [ X ] = evaluate(detectionThreshold)
 
 	clc;
 
+	detectionThreshold = 0.5;
 	%//=======================================================================
 	%// Open detection output
 	%//=======================================================================
@@ -13,11 +14,11 @@ function [ X ] = evaluate(detectionThreshold)
 	fclose(fileID);
 
 	detectedImgs = char(C{1});
-	detectedRegionsX = int32(C{2});
-	detectedRegionsY = int32(C{3});
-	detectedRegionsW = int32(C{4});
-	detectedRegionsH = int32(C{5});
-	detectedRegionScore = single(C{6});
+	detectionX = int32(C{2});
+	detectionY = int32(C{3});
+	detectionW = int32(C{4});
+	detectionH = int32(C{5});
+	detectionScore = single(C{6});
 
 	
 	%//=======================================================================
@@ -31,46 +32,66 @@ function [ X ] = evaluate(detectionThreshold)
 	C = textscan(fileID, '%s %d %d %d %d','delimiter', ',', 'EmptyValue', -Inf);
 	fclose(fileID);
 
-	groundTruthPosImgs = char(C{1});
-	groundTruthPosRegionsX = int32(C{2});
-	groundTruthPosRegionsY = int32(C{3});
-	groundTruthPosRegionsW = int32(C{4});
-	groundTruthPosRegionsH = int32(C{5});
+	gtImgs = char(C{1});
+	gtX = int32(C{2});
+	gtY = int32(C{3});
+	gtW = int32(C{4});
+	gtH = int32(C{5});
 
 
 	%//=======================================================================
 	%// Evaluate
 	%//=======================================================================		
-	truePositive = 0;
+	truePositive = 0;	
 	falsePositive = 0;
-	for i = 1:length(detectedRegionsX)
+	
+	listOfImgs={};
+	count=1;
+	for i = 1:length(detectionX)
 		dImg = strtrim(detectedImgs(i,:));
-		dRegion = [ detectedRegionsX(i) detectedRegionsY(i) detectedRegionsW(i) detectedRegionsH(i) ]		
-		detectedArea = detectedRegionsW(i) * detectedRegionsH(i);
+		dRegion = [ detectionX(i) detectionY(i) detectionW(i) detectionH(i) ];
+		dArea = detectionW(i) * detectionH(i);
 		
-		if detectedRegionScore(i) > detectionThreshold
-			for j = 1:length(groundTruthPosRegionsX)
-				gtImg = strtrim(groundTruthPosImgs(j,:));
-				gtRegion = [ groundTruthPosRegionsX(j) groundTruthPosRegionsY(j) groundTruthPosRegionsW(j) groundTruthPosRegionsH(j) ]
-				gtArea = groundTruthPosRegionsW(j) * groundTruthPosRegionsW(j);
+		%-- if detection score passes the threshold
+		if detectionScore(i) > detectionThreshold 
+		
+			for j = 1:length(gtX)
+				gtImg = strtrim(gtImgs(j,:));
+				gtRegion = [ gtX(j) gtY(j) gtW(j) gtH(j) ];
+				gtArea = gtW(j) * gtW(j);			
+				
 
 				if strcmp(dImg, gtImg) 			
-					largerArea = max(detectedArea, gtArea);
+					largerArea = max(dArea, gtArea);
+					intersection = rectint(dRegion, gtRegion);				
 					
-					if rectint(dRegion, gtRegion) > (0.5*largerArea)
-						truePositive = truePositive + 1;	
+					if intersection > (0.5*largerArea)
+						%if there is no entry for this img					
+						if length(find(strcmp(dImg, listOfImgs)==1)) == 0
+							%add img to list
+							listOfImgs{count,1} = dImg;
+							count = count +1;
+							
+							%add true positive
+							truePositive = truePositive + 1;	
+						end
 					else
 						falsePositive = falsePositive + 1;
 					end			
 				end
+				
 			end
 		end				
 	end	
 
-	falseNegatives = length(groundTruthPosRegionsX) - truePositive;
+	falseNegatives = length(gtX) - truePositive;
 	precision =  truePositive/(truePositive+falsePositive);%-- Precision = TP/(TP + FP) 
-	recall =  truePositive/length(groundTruthPosRegionsX);%-- Recall = TP/nP,
+	recall =  truePositive/length(gtX);%-- Recall = TP/nP,
 
+	
+	%//=======================================================================
+	%// Output
+	%//=======================================================================		
 	M ={};
 	M{1, 1} = detectionThreshold;
 	M{2, 1} = ('Precision');
@@ -87,11 +108,11 @@ function [ X ] = evaluate(detectionThreshold)
 	M{7, 1} = ('  ');
 	dlmcell('P-R.csv', M, ',', '-a');
 
-	%recall 
-	%precision 
-	%truePositive
-	%falseNegatives
-	%falsePositive
+	recall 
+	precision 
+	truePositive
+	falseNegatives
+	falsePositive
 
-end
+%end
 
