@@ -1,10 +1,10 @@
-function [ X ] = segmentation(frameNumber, baseDirectory)
+%function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	close all;
 	clc;
 	
-	%frameNumber='12_000180';
-	%baseDirectory='data/openni_data/'; 
+	frameNumber='12_000180';
+	baseDirectory='data/openni_data/'; 
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
 
@@ -144,7 +144,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	%// Find Lowest Regions
 	%//=======================================================================
-	maxDepth = 4000; %-- 4 meters
+	maxDepth = 1951; %-- 195.1cm  -avg height of adult male
 	minDepth = 200; %-- 20cm
 	for i=1:nC
 		flag = 0; %-- set to false
@@ -281,7 +281,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	YCBCR = rgb2ycbcr(rgbImage);
 	Y = YCBCR(:, :, 1);
 	for i = 1:nC
-		%-- Calculate region brightness average
+		%-- Calculate region brightness averagewidthS	
 		rgbRegionSum = uint64(0);
 		region_idx = find(labels==i);
 		for j=1:length(region_idx)
@@ -372,7 +372,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	
 	%--write out CSV
 	dlmcell(strcat(outputDirectory, 'output.csv'), M, ',', '-a');
-	clear all;	
-end
+	%clear all;	
+%end
 
 
