@@ -2,20 +2,11 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 
 	close all;
 	clc;
-	%clear all;
-	%frameNumber='2_000120';
-	%baseDirectory='data/openni_data/'; 
-	frameNumber		
-
 	
-	%//=======================================================================
-	%// initialize feature scores
-	%//=======================================================================
-	depthScore =[];
-	widthScore =[];
-	aspectRatioScore =[];
-	contrastScore =[];
-	detectionScore=[];
+	%frameNumber='12_000180';
+	%baseDirectory='data/openni_data/'; 
+	outputDirectory = strcat(baseDirectory, 'output/');
+	frameNumber		
 
 	
 	%//=======================================================================
@@ -57,12 +48,12 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	% z=z';
 
 	img = zImage;		
-
 	
+
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 25; % nC is the target number of superpixels.
+	nC = 9; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -79,45 +70,19 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	%figure, imshow(bmapOnImg,[]);
+	figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
-	
-	%//=======================================================================
-	%// Find pairwise superpixel combinations
-	%//=======================================================================
-	
-	%--(In Progress)
-	count = 1;
-	regionList=[];
-	for i=1:nC
-		regionList(count, 1) = count;
-		count = count + 1;
-	end
-	
-	for i=1:nC    
-		for j=1:nC
-			image1 = labels == i;
-			image2 =  labels == j;
-			image3 = image1 | image2;		
-			[ L num ]  = bwlabel(image3);
-			if num == 1 & i~=j
-				regionList(count, 1) = i;
-				regionList(count, 2) = j;
-				count = count + 1;
-			end
-		end		
-	end	
 	
 	
 	%//=======================================================================
 	%// Find average distance for each region (mm)
 	%//=======================================================================
-	regions = single(zeros(nC, 1));	
-			
+	regions = single(zeros(nC, 1));				
 	for i=1:(nC)
 		regionSum = uint64(0);
 		region_idx = find(labels==i);
+
 		for j=1:length(region_idx)
 			regionSum = uint64(img(region_idx(j))) + regionSum;
 		end
@@ -150,9 +115,36 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 
 	
 	%//=======================================================================
+	%// Find greedy superpixel combinations
+	%//=======================================================================
+	
+	%--TODO
+	count = 1;
+	regionList=[];
+	for i=1:nC
+		regionList(count, 1) = count;
+		count = count + 1;
+	end
+	
+	for i=1:nC    
+		for j=1:nC
+			image1 = labels == i;
+			image2 =  labels == j;
+			image3 = image1 | image2;		
+			[ L num ]  = bwlabel(image3);
+			if num == 1 & i~=j
+				regionList(count, 1) = i;
+				regionList(count, 2) = j;
+				count = count + 1;
+			end
+		end		
+	end		
+	
+	
+	%//=======================================================================
 	%// Find Lowest Regions
 	%//=======================================================================
-	maxDepth = 4000; %-- 4 meters
+	maxDepth = 1951; %-- 195.1cm  -avg height of adult male
 	minDepth = 200; %-- 20cm
 	for i=1:nC
 		flag = 0; %-- set to false
@@ -189,8 +181,8 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	%//=======================================================================
 	%// Find Principle Axes of Regions
 	%//=======================================================================
-	minHumanWidth = 200;  %200mm = 20cm
-	minHumanLength = 655; %655mm = 655cm
+	minHumanWidth = 368;  %368mm = 36.8cm
+	minHumanLength = 655; %655mm = 65.5cm
 	
 	for i = 1:nC
 		%-- Create list of rows/cols coordinates for perimeter of detection
@@ -257,7 +249,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 			principleAxis(i,2) = max(B (2,:))-min(B (2,:));
 		end
 
-		%Calculate Principle Axes Score
+		%Calculate Principle Axes Score	
 		if min(principleAxis(i, :)) > minHumanWidth & max(principleAxis(i, :)) > minHumanLength
 			widthScore(i,1) = 1; 
 		else
@@ -284,12 +276,12 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	%//=======================================================================
 	%// Find Absolute Brightness Intensity Score
 	%//=======================================================================
-	maxIntensity = 255;
+	maxIntensity = 100;
 	brightnessIntensity=[];
 	YCBCR = rgb2ycbcr(rgbImage);
 	Y = YCBCR(:, :, 1);
 	for i = 1:nC
-		%-- Calculate region brightness average
+		%-- Calculate region brightness averagewidthS	
 		rgbRegionSum = uint64(0);
 		region_idx = find(labels==i);
 		for j=1:length(region_idx)
@@ -303,11 +295,51 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 
 	
 	%//=======================================================================
+	%// Find Relative Brightness Intensity Score
+	%//=======================================================================
+	avgBrightnessDiff = 68; %--statistically determined
+	brightnessStd = 23.2367;
+	relativeBrightness = single(zeros(nC, 1));
+	for i = 1:nC
+		brightnessSum = uint64(0);
+		numNeighbours = 0;
+		for j = 1:nC
+			if neighbours(i,j) == 1
+				%avg the intensity
+				brightnessSum = uint64(brightnessIntensity(j,1)) + brightnessSum;
+				numNeighbours = numNeighbours + 1;
+			end
+		end		
+		
+		if brightnessSum ~=0
+			relativeBrightness(i, 1) = (brightnessSum/numNeighbours)-brightnessIntensity(i,1);
+		end
+		
+		if relativeBrightness(i, 1) > (avgBrightnessDiff + brightnessStd)
+			relativeIntensityScore(i,1) = 1;
+		else 
+			relativeIntensityScore(i,1) = relativeBrightness(i, 1)/(avgBrightnessDiff + brightnessStd);
+		end
+	end	
+		
+
+	%//=======================================================================
 	%// Calculate Detection Scores
 	%//=======================================================================
 	for i = 1:nC		
-		detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1))/4;
-	end
+		regionBorder(i,1) = 0;
+		[r c] = ind2sub(size(img), find(labels==i));		
+		if min(r) == 1 ... %--top border
+			| min(c) == 1 ... %--left border
+			| max(c) == width ... %-- right border
+			| min(r) == height %-- bottom border
+			regionBorder(i,1) = 1;	
+			detectionScore(i,1) = 0;
+		else
+			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
+			detectionScore(i,1) = depthScore(i,1) ;
+		end
+	end	
 
 	
 	%//=======================================================================
@@ -315,18 +347,33 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	%//=======================================================================
 	scoreVisualization = labels;
 	for i = 1:nC
-		scoreVisualization(scoreVisualization == i) = (contrastScore(i)*255); 
+		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
 	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','r');
+	M ={};	
+	for i = 1:nC	
+		if detectionScore(i,1) > 0		
+			[rows cols] = ind2sub(size(img), find(labels==i));
+			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+
+			M{i, 1} = frameNumber;
+			M{i, 2} = min(cols);
+			M{i, 3} = min(rows);
+			M{i, 4} = (max(cols)-min(cols));
+			M{i, 5} = (max(rows)-min(rows));
+			M{i, 6} = detectionScore(i,1);			
+		end
+	end
 	
-	rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','g');
-	outputDirectory = strcat(baseDirectory, 'output/');
 	f=getframe(gca);
 	[X, map] = frame2im(f);
 	imwrite(X, strcat(outputDirectory, imageName));
-	hold off;
-
+	%hold off;
 	
+	%--write out CSV
+	%dlmcell(strcat(outputDirectory, 'newDepthoutput.csv'), M, ',', '-a');
+	%clear all;	
 end
 
 

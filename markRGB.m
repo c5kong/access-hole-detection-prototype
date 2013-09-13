@@ -21,10 +21,7 @@ function [ X ] = evaluate()
 	groundTruthPosRegionsH = int32(C{5});
 	
 	for i =1:length(groundTruthPosRegionsH)
-		gtRegion(1, 1) = groundTruthPosRegionsX(i);
-		gtRegion(1, 2) = groundTruthPosRegionsY(i);
-		gtRegion(1, 3) = groundTruthPosRegionsW(i);
-		gtRegion(1, 4) = groundTruthPosRegionsH(i);
+		gtRegion = [ groundTruthPosRegionsX(i) groundTruthPosRegionsY(i) groundTruthPosRegionsW(i) groundTruthPosRegionsH(i) ];
 
 		img = imread(strcat(directory, strtrim(groundTruthPosImgs(i,:))));
 

@@ -15,14 +15,14 @@ function [ X ] = evaluate()
 	fclose(fileID);
 
 	groundTruthPosImgs = char(C{1});
-	groundTruthPosRegionsX = int32(C{2});
-	groundTruthPosRegionsY = int32(C{3});
-	groundTruthPosRegionsW = int32(C{4});
-	groundTruthPosRegionsH = int32(C{5});
+	gtX = int32(C{2});
+	gtY = int32(C{3});
+	gtW = int32(C{4});
+	gtH = int32(C{5});
 	
-	for i =1:length(groundTruthPosRegionsH)
+	for i =1:length(gtH)
 
-		segmentation_gt_label(strtrim(groundTruthPosImgs(i,:)), gtDirectory, groundTruthPosRegionsX(i), groundTruthPosRegionsY(i), groundTruthPosRegionsW(i), groundTruthPosRegionsH(i));
+		segmentation(strtrim(groundTruthPosImgs(i,:)), gtDirectory, gtX(i), gtY(i), gtW(i), gtH(i));
 
 	end
 	
