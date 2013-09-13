@@ -1,0 +1,133 @@
+0,
+Precision,0.1978
+Recall,0.10843
+True Positives,18
+False Positives,73
+False Negatives,148
+  ,
+0.05,
+Precision,0.25373
+Recall,0.10241
+True Positives,17
+False Positives,50
+False Negatives,149
+  ,
+0.1,
+Precision,0.2381
+Recall,0.060241
+True Positives,10
+False Positives,32
+False Negatives,156
+  ,
+0.15,
+Precision,0.15789
+Recall,0.018072
+True Positives,3
+False Positives,16
+False Negatives,163
+  ,
+0.2,
+Precision,0.090909
+Recall,0.0060241
+True Positives,1
+False Positives,10
+False Negatives,165
+  ,
+0.25,
+Precision,0
+Recall,0
+True Positives,0
+False Positives,8
+False Negatives,166
+  ,
+0.3,
+Precision,0
+Recall,0
+True Positives,0
+False Positives,5
+False Negatives,166
+  ,
+0.35,
+Precision,0
+Recall,0
+True Positives,0
+False Positives,3
+False Negatives,166
+  ,
+0.4,
+Precision,0
+Recall,0
+True Positives,0
+False Positives,1
+False Negatives,166
+  ,
+0.45,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.5,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.55,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.6,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.65,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.7,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.75,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.8,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.85,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,
+0.9,
+Precision,NaN
+Recall,0
+True Positives,0
+False Positives,0
+False Negatives,166
+  ,

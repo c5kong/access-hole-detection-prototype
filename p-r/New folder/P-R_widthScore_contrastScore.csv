@@ -1,0 +1,133 @@
+0,
+Precision,0.042868
+Recall,0.33133
+True Positives,55
+False Positives,1228
+False Negatives,111
+  ,
+0.05,
+Precision,0.042868
+Recall,0.33133
+True Positives,55
+False Positives,1228
+False Negatives,111
+  ,
+0.1,
+Precision,0.042868
+Recall,0.33133
+True Positives,55
+False Positives,1228
+False Negatives,111
+  ,
+0.15,
+Precision,0.042868
+Recall,0.33133
+True Positives,55
+False Positives,1228
+False Negatives,111
+  ,
+0.2,
+Precision,0.04307
+Recall,0.33133
+True Positives,55
+False Positives,1222
+False Negatives,111
+  ,
+0.25,
+Precision,0.04372
+Recall,0.33133
+True Positives,55
+False Positives,1203
+False Negatives,111
+  ,
+0.3,
+Precision,0.043974
+Recall,0.3253
+True Positives,54
+False Positives,1174
+False Negatives,112
+  ,
+0.35,
+Precision,0.04557
+Recall,0.3253
+True Positives,54
+False Positives,1131
+False Negatives,112
+  ,
+0.4,
+Precision,0.048358
+Recall,0.31928
+True Positives,53
+False Positives,1043
+False Negatives,113
+  ,
+0.45,
+Precision,0.055675
+Recall,0.31325
+True Positives,52
+False Positives,882
+False Negatives,114
+  ,
+0.5,
+Precision,0.068548
+Recall,0.30723
+True Positives,51
+False Positives,693
+False Negatives,115
+  ,
+0.55,
+Precision,0.087814
+Recall,0.29518
+True Positives,49
+False Positives,509
+False Negatives,117
+  ,
+0.6,
+Precision,0.10209
+Recall,0.26506
+True Positives,44
+False Positives,387
+False Negatives,122
+  ,
+0.65,
+Precision,0.11905
+Recall,0.24096
+True Positives,40
+False Positives,296
+False Negatives,126
+  ,
+0.7,
+Precision,0.12734
+Recall,0.20482
+True Positives,34
+False Positives,233
+False Negatives,132
+  ,
+0.75,
+Precision,0.125
+Recall,0.16265
+True Positives,27
+False Positives,189
+False Negatives,139
+  ,
+0.8,
+Precision,0.14793
+Recall,0.1506
+True Positives,25
+False Positives,144
+False Negatives,141
+  ,
+0.85,
+Precision,0.13559
+Recall,0.096386
+True Positives,16
+False Positives,102
+False Negatives,150
+  ,
+0.9,
+Precision,0.15
+Recall,0.036145
+True Positives,6
+False Positives,34
+False Negatives,160
+  ,

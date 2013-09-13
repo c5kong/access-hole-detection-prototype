@@ -1,0 +1,133 @@
+0,
+Precision,0.034961
+Recall,0.75904
+True Positives,126
+False Positives,3478
+False Negatives,40
+  ,
+0.05,
+Precision,0.034961
+Recall,0.75904
+True Positives,126
+False Positives,3478
+False Negatives,40
+  ,
+0.1,
+Precision,0.034971
+Recall,0.75904
+True Positives,126
+False Positives,3477
+False Negatives,40
+  ,
+0.15,
+Precision,0.035
+Recall,0.75904
+True Positives,126
+False Positives,3474
+False Negatives,40
+  ,
+0.2,
+Precision,0.035107
+Recall,0.75904
+True Positives,126
+False Positives,3463
+False Negatives,40
+  ,
+0.25,
+Precision,0.035573
+Recall,0.75904
+True Positives,126
+False Positives,3416
+False Negatives,40
+  ,
+0.3,
+Precision,0.036332
+Recall,0.75904
+True Positives,126
+False Positives,3342
+False Negatives,40
+  ,
+0.35,
+Precision,0.0375
+Recall,0.75904
+True Positives,126
+False Positives,3234
+False Negatives,40
+  ,
+0.4,
+Precision,0.03967
+Recall,0.75301
+True Positives,125
+False Positives,3026
+False Negatives,41
+  ,
+0.45,
+Precision,0.044916
+Recall,0.75301
+True Positives,125
+False Positives,2658
+False Negatives,41
+  ,
+0.5,
+Precision,0.053556
+Recall,0.75301
+True Positives,125
+False Positives,2209
+False Negatives,41
+  ,
+0.55,
+Precision,0.065183
+Recall,0.74096
+True Positives,123
+False Positives,1764
+False Negatives,43
+  ,
+0.6,
+Precision,0.077316
+Recall,0.72892
+True Positives,121
+False Positives,1444
+False Negatives,45
+  ,
+0.65,
+Precision,0.09326
+Recall,0.71687
+True Positives,119
+False Positives,1157
+False Negatives,47
+  ,
+0.7,
+Precision,0.10444
+Recall,0.68072
+True Positives,113
+False Positives,969
+False Negatives,53
+  ,
+0.75,
+Precision,0.11207
+Recall,0.62651
+True Positives,104
+False Positives,824
+False Negatives,62
+  ,
+0.8,
+Precision,0.12658
+Recall,0.60241
+True Positives,100
+False Positives,690
+False Negatives,66
+  ,
+0.85,
+Precision,0.12972
+Recall,0.4759
+True Positives,79
+False Positives,530
+False Negatives,87
+  ,
+0.9,
+Precision,0.16722
+Recall,0.3012
+True Positives,50
+False Positives,249
+False Negatives,116
+  ,

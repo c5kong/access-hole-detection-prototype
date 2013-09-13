@@ -1,0 +1,133 @@
+0,
+Precision,0.035049
+Recall,0.75904
+True Positives,126
+False Positives,3469
+False Negatives,40
+  ,
+0.05,
+Precision,0.034829
+Recall,0.75301
+True Positives,125
+False Positives,3464
+False Negatives,41
+  ,
+0.1,
+Precision,0.034887
+Recall,0.75301
+True Positives,125
+False Positives,3458
+False Negatives,41
+  ,
+0.15,
+Precision,0.034994
+Recall,0.75301
+True Positives,125
+False Positives,3447
+False Negatives,41
+  ,
+0.2,
+Precision,0.034473
+Recall,0.73494
+True Positives,122
+False Positives,3417
+False Negatives,44
+  ,
+0.25,
+Precision,0.034991
+Recall,0.72892
+True Positives,121
+False Positives,3337
+False Negatives,45
+  ,
+0.3,
+Precision,0.033914
+Recall,0.68072
+True Positives,113
+False Positives,3219
+False Negatives,53
+  ,
+0.35,
+Precision,0.034965
+Recall,0.66265
+True Positives,110
+False Positives,3036
+False Negatives,56
+  ,
+0.4,
+Precision,0.032632
+Recall,0.56024
+True Positives,93
+False Positives,2757
+False Negatives,73
+  ,
+0.45,
+Precision,0.032727
+Recall,0.48795
+True Positives,81
+False Positives,2394
+False Negatives,85
+  ,
+0.5,
+Precision,0.034941
+Recall,0.42771
+True Positives,71
+False Positives,1961
+False Negatives,95
+  ,
+0.55,
+Precision,0.036755
+Recall,0.3494
+True Positives,58
+False Positives,1520
+False Negatives,108
+  ,
+0.6,
+Precision,0.043706
+Recall,0.3012
+True Positives,50
+False Positives,1094
+False Negatives,116
+  ,
+0.65,
+Precision,0.054886
+Recall,0.24699
+True Positives,41
+False Positives,706
+False Negatives,125
+  ,
+0.7,
+Precision,0.065574
+Recall,0.16867
+True Positives,28
+False Positives,399
+False Negatives,138
+  ,
+0.75,
+Precision,0.057416
+Recall,0.072289
+True Positives,12
+False Positives,197
+False Negatives,154
+  ,
+0.8,
+Precision,0.05618
+Recall,0.03012
+True Positives,5
+False Positives,84
+False Negatives,161
+  ,
+0.85,
+Precision,0.068966
+Recall,0.012048
+True Positives,2
+False Positives,27
+False Negatives,164
+  ,
+0.9,
+Precision,0
+Recall,0
+True Positives,0
+False Positives,6
+False Negatives,166
+  ,

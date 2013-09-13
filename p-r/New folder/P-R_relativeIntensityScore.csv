@@ -1,0 +1,133 @@
+0,
+Precision,0.062971
+Recall,0.70482
+True Positives,117
+False Positives,1741
+False Negatives,49
+  ,
+0.05,
+Precision,0.070588
+Recall,0.68675
+True Positives,114
+False Positives,1501
+False Negatives,52
+  ,
+0.1,
+Precision,0.083148
+Recall,0.6747
+True Positives,112
+False Positives,1235
+False Negatives,54
+  ,
+0.15,
+Precision,0.096187
+Recall,0.66867
+True Positives,111
+False Positives,1043
+False Negatives,55
+  ,
+0.2,
+Precision,0.11168
+Recall,0.65663
+True Positives,109
+False Positives,867
+False Negatives,57
+  ,
+0.25,
+Precision,0.1215
+Recall,0.62651
+True Positives,104
+False Positives,752
+False Negatives,62
+  ,
+0.3,
+Precision,0.13779
+Recall,0.60843
+True Positives,101
+False Positives,632
+False Negatives,65
+  ,
+0.35,
+Precision,0.14774
+Recall,0.57229
+True Positives,95
+False Positives,548
+False Negatives,71
+  ,
+0.4,
+Precision,0.16487
+Recall,0.55422
+True Positives,92
+False Positives,466
+False Negatives,74
+  ,
+0.45,
+Precision,0.17805
+Recall,0.51807
+True Positives,86
+False Positives,397
+False Negatives,80
+  ,
+0.5,
+Precision,0.18491
+Recall,0.45783
+True Positives,76
+False Positives,335
+False Negatives,90
+  ,
+0.55,
+Precision,0.19412
+Recall,0.39759
+True Positives,66
+False Positives,274
+False Negatives,100
+  ,
+0.6,
+Precision,0.19718
+Recall,0.33735
+True Positives,56
+False Positives,228
+False Negatives,110
+  ,
+0.65,
+Precision,0.2
+Recall,0.27108
+True Positives,45
+False Positives,180
+False Negatives,121
+  ,
+0.7,
+Precision,0.21354
+Recall,0.24699
+True Positives,41
+False Positives,151
+False Negatives,125
+  ,
+0.75,
+Precision,0.19728
+Recall,0.1747
+True Positives,29
+False Positives,118
+False Negatives,137
+  ,
+0.8,
+Precision,0.19167
+Recall,0.13855
+True Positives,23
+False Positives,97
+False Negatives,143
+  ,
+0.85,
+Precision,0.20619
+Recall,0.12048
+True Positives,20
+False Positives,77
+False Negatives,146
+  ,
+0.9,
+Precision,0.20513
+Recall,0.096386
+True Positives,16
+False Positives,62
+False Negatives,150
+  ,

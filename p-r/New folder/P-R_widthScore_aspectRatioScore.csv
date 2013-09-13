@@ -1,0 +1,133 @@
+0,
+Precision,0.042868
+Recall,0.33133
+True Positives,55
+False Positives,1228
+False Negatives,111
+  ,
+0.05,
+Precision,0.042155
+Recall,0.3253
+True Positives,54
+False Positives,1227
+False Negatives,112
+  ,
+0.1,
+Precision,0.042155
+Recall,0.3253
+True Positives,54
+False Positives,1227
+False Negatives,112
+  ,
+0.15,
+Precision,0.042155
+Recall,0.3253
+True Positives,54
+False Positives,1227
+False Negatives,112
+  ,
+0.2,
+Precision,0.042188
+Recall,0.3253
+True Positives,54
+False Positives,1226
+False Negatives,112
+  ,
+0.25,
+Precision,0.042486
+Recall,0.3253
+True Positives,54
+False Positives,1217
+False Negatives,112
+  ,
+0.3,
+Precision,0.042823
+Recall,0.3253
+True Positives,54
+False Positives,1207
+False Negatives,112
+  ,
+0.35,
+Precision,0.042985
+Recall,0.31928
+True Positives,53
+False Positives,1180
+False Negatives,113
+  ,
+0.4,
+Precision,0.042589
+Recall,0.3012
+True Positives,50
+False Positives,1124
+False Negatives,116
+  ,
+0.45,
+Precision,0.044077
+Recall,0.28916
+True Positives,48
+False Positives,1041
+False Negatives,118
+  ,
+0.5,
+Precision,0.045455
+Recall,0.26506
+True Positives,44
+False Positives,924
+False Negatives,122
+  ,
+0.55,
+Precision,0.050188
+Recall,0.24096
+True Positives,40
+False Positives,757
+False Negatives,126
+  ,
+0.6,
+Precision,0.056
+Recall,0.21084
+True Positives,35
+False Positives,590
+False Negatives,131
+  ,
+0.65,
+Precision,0.071111
+Recall,0.19277
+True Positives,32
+False Positives,418
+False Negatives,134
+  ,
+0.7,
+Precision,0.090196
+Recall,0.13855
+True Positives,23
+False Positives,232
+False Negatives,143
+  ,
+0.75,
+Precision,0.066116
+Recall,0.048193
+True Positives,8
+False Positives,113
+False Negatives,158
+  ,
+0.8,
+Precision,0.10638
+Recall,0.03012
+True Positives,5
+False Positives,42
+False Negatives,161
+  ,
+0.85,
+Precision,0.15385
+Recall,0.012048
+True Positives,2
+False Positives,11
+False Negatives,164
+  ,
+0.9,
+Precision,0
+Recall,0
+True Positives,0
+False Positives,2
+False Negatives,166
+  ,
