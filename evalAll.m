@@ -1,3 +1,4 @@
+tic;
 evaluate(0);
 evaluate(0.05);
 evaluate(0.1);
@@ -17,3 +18,4 @@ evaluate(0.75);
 evaluate(0.8);
 evaluate(0.85);
 evaluate(0.9);
+toc;

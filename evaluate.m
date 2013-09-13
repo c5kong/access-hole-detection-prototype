@@ -7,7 +7,43 @@ function [ X ] = evaluate(detectionThreshold)
 	%// Open detection output
 	%//=======================================================================
 
-	inputFile = ('aspectRatioScore.csv');	
+	
+%	inputFile = ('aspectRatioScore.csv'); 
+%	inputFile = ('aspectRatioScore_relativeIntensityScore.csv'); 
+%	inputFile = ('contrastScore.csv'); 
+%	inputFile = ('contrastScore_aspectRatioScore.csv'); 
+%	inputFile = ('contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
+	%inputFile = ('contrastScore_relativeIntensityScore.csv'); 
+%	inputFile = ('depthScore.csv'); 
+%	inputFile = ('depthScore_aspectRatioScore.csv'); 
+%	inputFile = ('depthScore_aspectRatioScore_relativeIntensityScore.csv'); 
+%	inputFile = ('depthScore_contrastScore.csv'); 
+%	inputFile = ('depthScore_contrastScore_aspectRatioScore.csv'); 
+%	inputFile = ('depthScore_contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
+%	inputFile = ('depthScore_contrastScore_relativeIntensityScore.csv'); 
+%	inputFile = ('depthScore_relativeIntensityScore.csv'); 
+%	inputFile = ('relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore.csv'); 
+%	inputFile = ('widthScore_aspectRatioScore.csv'); 
+%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore_depthScore.csv'); 
+%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore_depthScore_relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore_contrastScore.csv'); 
+%	inputFile = ('widthScore_contrastScore_aspectRatioScore.csv'); 
+%	inputFile = ('widthScore_contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore_contrastScore_relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore_depthScore.csv'); 
+%	inputFile = ('widthScore_depthScore_aspectRatioScore.csv'); 
+%	inputFile = ('widthScore_depthScore_aspectRatioScore_relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore_depthScore_contrastScore.csv'); 
+%	inputFile = ('widthScore_depthScore_contrastScore_aspectRatioScore.csv'); 
+%	inputFile = ('widthScore_depthScore_contrastScore_relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore_depthScore_relativeIntensityScore.csv'); 
+%	inputFile = ('widthScore_relativeIntensityScore.csv'); 
+	inputFile = ('newDepthoutput.csv'); 
+	
+	
+
 	inputDirectory = ('data/openni_data/output/');
 	fileID = fopen(strcat(inputDirectory, inputFile));
 	C = textscan(fileID, '%s %d %d %d %d %f','delimiter', ',', 'EmptyValue', -Inf);
@@ -93,20 +129,10 @@ function [ X ] = evaluate(detectionThreshold)
 	%// Output
 	%//=======================================================================		
 	M ={};
-	M{1, 1} = detectionThreshold;
-	M{2, 1} = ('Precision');
-	M{2, 2} = precision;
-	M{3, 1} = ('Recall');
-	M{3, 2} = recall;
-	M{4, 1} = ('True Positives');
-	M{4, 2} = truePositive;
-	M{5, 1} = ('False Positives');
-	M{5, 2} = falsePositive;
-	M{6, 1} = ('False Negatives');
-	M{6, 2} = falseNegatives;
+	M{1, 1} = recall;
+	M{1, 2} = precision;
 
-	M{7, 1} = ('  ');
-	dlmcell('P-R.csv', M, ',', '-a');
+	dlmcell(strcat('P-R_', inputFile), M, ',', '-a');
 
 	%recall 
 	%precision 
@@ -115,5 +141,6 @@ function [ X ] = evaluate(detectionThreshold)
 	%falsePositive
 
 	clear all;
+
 end
 
