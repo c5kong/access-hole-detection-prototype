@@ -1,10 +1,10 @@
-%function [ X ] = segmentation(frameNumber, baseDirectory)
+function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	close all;
 	clc;
 	
-	frameNumber='12_000180';
-	baseDirectory='data/openni_data/'; 
+	%frameNumber='12_000180';
+	%baseDirectory='data/openni_data/'; 
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
 
@@ -48,7 +48,7 @@
 	% z=z';
 
 	img = zImage;		
-
+	
 
 	%//=======================================================================
 	%// Superpixel segmentation
@@ -70,7 +70,7 @@
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	%figure, imshow(bmapOnImg,[]);
+	figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	
@@ -276,7 +276,7 @@
 	%//=======================================================================
 	%// Find Absolute Brightness Intensity Score
 	%//=======================================================================
-	maxIntensity = 255;
+	maxIntensity = 100;
 	brightnessIntensity=[];
 	YCBCR = rgb2ycbcr(rgbImage);
 	Y = YCBCR(:, :, 1);
@@ -297,7 +297,8 @@
 	%//=======================================================================
 	%// Find Relative Brightness Intensity Score
 	%//=======================================================================
-	avgBrightnessDiff = 100;%--statistically determined
+	avgBrightnessDiff = 68; %--statistically determined
+	brightnessStd = 23.2367;
 	relativeBrightness = single(zeros(nC, 1));
 	for i = 1:nC
 		brightnessSum = uint64(0);
@@ -314,10 +315,10 @@
 			relativeBrightness(i, 1) = (brightnessSum/numNeighbours)-brightnessIntensity(i,1);
 		end
 		
-		if relativeBrightness(i, 1) < avgBrightnessDiff
-			relativeIntensityScore = 1;
-		else
-			relativeIntensityScore = 0;
+		if relativeBrightness(i, 1) > (avgBrightnessDiff + brightnessStd)
+			relativeIntensityScore(i,1) = 1;
+		else 
+			relativeIntensityScore(i,1) = relativeBrightness(i, 1)/(avgBrightnessDiff + brightnessStd);
 		end
 	end	
 		
@@ -335,8 +336,8 @@
 			regionBorder(i,1) = 1;	
 			detectionScore(i,1) = 0;
 		else
-			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore)/5;
-			detectionScore(i,1) = aspectRatioScore(i,1) ;
+			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
+			detectionScore(i,1) = depthScore(i,1) ;
 		end
 	end	
 
@@ -348,13 +349,13 @@
 	for i = 1:nC
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
-%	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
-	
+	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+
 	M ={};	
 	for i = 1:nC	
-		%if detectionScore(i,1) > 0.58		
+		if detectionScore(i,1) > 0		
 			[rows cols] = ind2sub(size(img), find(labels==i));
-%			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 
 			M{i, 1} = frameNumber;
 			M{i, 2} = min(cols);
@@ -362,17 +363,17 @@
 			M{i, 4} = (max(cols)-min(cols));
 			M{i, 5} = (max(rows)-min(rows));
 			M{i, 6} = detectionScore(i,1);			
-		%end
+		end
 	end
 	
-	%f=getframe(gca);
-	%[X, map] = frame2im(f);
-	%imwrite(X, strcat(outputDirectory, depthImage));
+	f=getframe(gca);
+	[X, map] = frame2im(f);
+	%imwrite(X, strcat(outputDirectory, imageName));
 	%hold off;
 	
 	%--write out CSV
-	dlmcell(strcat(outputDirectory, 'output.csv'), M, ',', '-a');
+	%dlmcell(strcat(outputDirectory, 'newDepthoutput.csv'), M, ',', '-a');
 	%clear all;	
-%end
+end
 
 
