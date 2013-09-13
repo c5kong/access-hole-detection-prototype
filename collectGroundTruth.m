@@ -172,7 +172,7 @@ function X = evaluateAll()
 	%groundTruth('rgb_8_000540.png', directory);
 	%groundTruth('rgb_8_000600.png', directory);
 	%groundTruth('rgb_8_000660.png', directory);
-
+    groundTruth('rgb_9_000720.png', directory);
 	toc
 end
 
