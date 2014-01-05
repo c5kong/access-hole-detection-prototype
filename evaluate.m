@@ -40,7 +40,8 @@ function [ X ] = evaluate(detectionThreshold)
 %	inputFile = ('widthScore_depthScore_contrastScore_relativeIntensityScore.csv'); 
 %	inputFile = ('widthScore_depthScore_relativeIntensityScore.csv'); 
 %	inputFile = ('widthScore_relativeIntensityScore.csv'); 
-	inputFile = ('newDepthoutput.csv'); 
+%	inputFile = ('output.csv'); 
+	inputFile = ('avgOutput.csv'); 
 	
 	
 

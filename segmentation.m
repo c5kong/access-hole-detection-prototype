@@ -4,6 +4,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	clc;
 	
 	%frameNumber='12_000180';
+	%frameNumber='11_000000';
+	%frameNumber='11_000060';
+	%frameNumber='9_000720';
 	%baseDirectory='data/openni_data/'; 
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
@@ -28,6 +31,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	x = fread(fid, inf, '*short');	
 	fclose(fid);
 	xImage = vec2mat(x,640);
+	
 	
 	fid = fopen(strcat(depthDirectory,strcat('y_', binaryName)));
 	y = fread(fid, inf, '*short');	
@@ -70,7 +74,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	figure, imshow(bmapOnImg,[]);
+	%figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	
@@ -144,7 +148,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	%// Find Lowest Regions
 	%//=======================================================================
-	maxDepth = 1951; %-- 195.1cm  -avg height of adult male
+	maxDepth = 1000; %-- 195.1cm  -avg height of adult male
 	minDepth = 200; %-- 20cm
 	for i=1:nC
 		flag = 0; %-- set to false
@@ -270,13 +274,13 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		aspectRatio(i,1)= length(find(labels==i))/boundingBoxArea(i,1) ;
 	
 		%Calculate Aspect Ratio Score
-		aspectRatioScore(i,1) = 1-aspectRatio(i,1);
+		aspectRatioScore(i,1) = aspectRatio(i,1);
 	end	
 
 	%//=======================================================================
 	%// Find Absolute Brightness Intensity Score
 	%//=======================================================================
-	maxIntensity = 100;
+	maxIntensity = 70;
 	brightnessIntensity=[];
 	YCBCR = rgb2ycbcr(rgbImage);
 	Y = YCBCR(:, :, 1);
@@ -290,7 +294,13 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
 	
 		%Calculate Brightness Score
-		contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
+		
+		if brightnessIntensity(i,1) > maxIntensity
+			contrastScore(i,1) = 0;
+		else
+			contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
+		end
+		
 	end	
 
 	
@@ -336,8 +346,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			regionBorder(i,1) = 1;	
 			detectionScore(i,1) = 0;
 		else
-			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
-			detectionScore(i,1) = depthScore(i,1) ;
+			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
+			%detectionScore(i,1) = depthScore(i,1)*contrastScore(i,1) *widthScore(i,1)*relativeIntensityScore(i,1);
+			%detectionScore(i,1) = relativeIntensityScore(i,1);
 		end
 	end	
 
@@ -345,12 +356,14 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	%// Display
 	%//=======================================================================
+	%figure, imshow(bmapOnImg,[]);
 	scoreVisualization = labels;
 	for i = 1:nC
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
-	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
-
+	%figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	%rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','r');
+	
 	M ={};	
 	for i = 1:nC	
 		if detectionScore(i,1) > 0		
@@ -366,14 +379,14 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end
 	end
 	
-	f=getframe(gca);
-	[X, map] = frame2im(f);
+	%f=getframe(gca);
+	%[X, map] = frame2im(f);
 	%imwrite(X, strcat(outputDirectory, imageName));
 	%hold off;
 	
 	%--write out CSV
-	%dlmcell(strcat(outputDirectory, 'newDepthoutput.csv'), M, ',', '-a');
-	%clear all;	
+	dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
+	clear all;	
 end
 
 

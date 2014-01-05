@@ -22,7 +22,7 @@ function [ X ] = evaluate()
 	
 	for i =1:length(gtH)
 
-		segmentation(strtrim(groundTruthPosImgs(i,:)), gtDirectory, gtX(i), gtY(i), gtW(i), gtH(i));
+		segmentation_gt_label(strtrim(groundTruthPosImgs(i,:)), gtDirectory, gtX(i), gtY(i), gtW(i), gtH(i));
 
 	end
 	

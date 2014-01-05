@@ -1,9 +1,10 @@
 function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, rectH)
-
 	close all;
 	clc;
 	
 	%frameNumber='12_000180';
+	%frameNumber='11_000000';
+	%frameNumber='11_000060';
 	%baseDirectory='data/openni_data/'; 
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
@@ -29,6 +30,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	fclose(fid);
 	xImage = vec2mat(x,640);
 	
+	
 	fid = fopen(strcat(depthDirectory,strcat('y_', binaryName)));
 	y = fread(fid, inf, '*short');	
 	fclose(fid);
@@ -53,7 +55,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 9; % nC is the target number of superpixels.
+	nC = 25; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -70,7 +72,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	figure, imshow(bmapOnImg,[]);
+	%figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	
@@ -144,7 +146,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	%//=======================================================================
 	%// Find Lowest Regions
 	%//=======================================================================
-	maxDepth = 1951; %-- 195.1cm  -avg height of adult male
+	maxDepth = 1000; %-- 195.1cm  -avg height of adult male
 	minDepth = 200; %-- 20cm
 	for i=1:nC
 		flag = 0; %-- set to false
@@ -290,7 +292,13 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 		brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
 	
 		%Calculate Brightness Score
-		contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
+		
+		if brightnessIntensity(i,1) > maxIntensity
+			contrastScore(i,1) = 0;
+		else
+			contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
+		end
+		
 	end	
 
 	
@@ -337,7 +345,8 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 			detectionScore(i,1) = 0;
 		else
 			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
-			detectionScore(i,1) = depthScore(i,1) ;
+			detectionScore(i,1) = depthScore(i,1)*contrastScore(i,1) *widthScore(i,1)*relativeIntensityScore(i,1);
+			%detectionScore(i,1) = relativeIntensityScore(i,1);
 		end
 	end	
 
@@ -345,12 +354,14 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	%//=======================================================================
 	%// Display
 	%//=======================================================================
+	%figure, imshow(bmapOnImg,[]);
 	scoreVisualization = labels;
 	for i = 1:nC
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
 	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 	rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','r');
+	
 	M ={};	
 	for i = 1:nC	
 		if detectionScore(i,1) > 0		
@@ -372,8 +383,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory, rectX, rectY, rectW, r
 	%hold off;
 	
 	%--write out CSV
-	%dlmcell(strcat(outputDirectory, 'newDepthoutput.csv'), M, ',', '-a');
-	%clear all;	
+	dlmcell(strcat(outputDirectory, 'output.csv'), M, ',', '-a');
+	clear all;	
 end
-
 
