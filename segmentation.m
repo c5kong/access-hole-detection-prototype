@@ -1,13 +1,15 @@
-function [ X ] = segmentation(frameNumber, baseDirectory)
+%function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	close all;
 	clc;
 	
-	%frameNumber='12_000180';
+	frameNumber='12_000180';
 	%frameNumber='11_000000';
 	%frameNumber='11_000060';
 	%frameNumber='9_000720';
-	%baseDirectory='data/openni_data/'; 
+	baseDirectory='data/openni_data/'; 
+
+
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
 
@@ -361,14 +363,14 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	for i = 1:nC
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
-	%figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 	%rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','r');
 	
 	M ={};	
 	for i = 1:nC	
-		if detectionScore(i,1) > 0		
+		if detectionScore(i,1) > 0.4		
 			[rows cols] = ind2sub(size(img), find(labels==i));
-			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 
 			M{i, 1} = frameNumber;
 			M{i, 2} = min(cols);
@@ -385,8 +387,10 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%hold off;
 	
 	%--write out CSV
-	dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
-	clear all;	
-end
+	%dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
+	%clear all;	
+
+	
+%end
 
 
