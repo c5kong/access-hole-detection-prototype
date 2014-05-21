@@ -1,4 +1,4 @@
-%function [ X ] = segmentation(frameNumber, baseDirectory)
+%funumOfRegionstion [ X ] = segmentation(frameNumber, baseDirectory)
 
 	close all;
 	clc;
@@ -56,36 +56,33 @@
 	img = zImage;		
 	
 
-	%//=======================================================================
-	%// Superpixel segmentation
-	%//=======================================================================
-	nC = 25; % nC is the target number of superpixels.
-	lambda_prime = .5;
-	sigma = 5.0; 
-	conn8 = 1; % flag for using 8 connected grid graph (default setting).
 
-	[labels] = mex_ers(255*double(img)/double(max(img(:))),nC);%-- Call the mex function for superpixel segmentation\
-	labels(labels == 0) = nC; %-- Normalize regions to matlab convention of 1:nC instead of 0:nC-1
-		
-	[height width] = size(labels);
-	[bmap] = seg2bmap(labels,width,height);
-	bmapOnImg = grey_img;
-	idx = find(bmap>0);
-	timg = grey_img;
-	timg(idx) = 255;
-	bmapOnImg(:,:,2) = timg;
-	bmapOnImg(:,:,1) = grey_img;
-	bmapOnImg(:,:,3) = grey_img;
-	%figure, imshow(bmapOnImg,[]);
-	%figure, imshow(labels,[]);
 
+	
+	%//=======================================================================
+	%// Find neighbours
+	%//=======================================================================
+	neighbours = zeros(numOfRegions, numOfRegions);
+	for i=1:numOfRegions
+		for j=1:numOfRegions
+			image1 = labels == i;
+			image2 =  labels == j;
+			image3 = image1 | image2;		
+			[ L num ]  = bwlabel(image3);
+			if i==j
+				neighbours(i, j) = 0;
+			elseif num == 1
+				neighbours(i, j) = 1;			
+			end
+		end		
+	end
 	
 	
 	%//=======================================================================
-	%// Find average distance for each region (mm)
+	%// Find average distanumOfRegionse for each region (mm)
 	%//=======================================================================
-	regions = single(zeros(nC, 1));				
-	for i=1:(nC)
+	regions = single(zeros(numOfRegions, 1));				
+	for i=1:(numOfRegions)
 		regionSum = uint64(0);
 		region_idx = find(labels==i);
 
@@ -98,28 +95,9 @@
 		else
 			regions(i, 1) = 0;
 		end
-	end
-
+	end	
 	
-	%//=======================================================================
-	%// Find neighbours
-	%//=======================================================================
-	neighbours = zeros(nC, nC);
-	for i=1:nC
-		for j=1:nC
-			image1 = labels == i;
-			image2 =  labels == j;
-			image3 = image1 | image2;		
-			[ L num ]  = bwlabel(image3);
-			if i==j
-				neighbours(i, j) = 0;
-			elseif num == 1
-				neighbours(i, j) = 1;			
-			end
-		end		
-	end
 
-	
 	%//=======================================================================
 	%// Find greedy superpixel combinations
 	%//=======================================================================
@@ -127,70 +105,26 @@
 	%--TODO
 	count = 1;
 	regionList=[];
-	for i=1:nC
+	for i=1:numOfRegions
 		regionList(count, 1) = count;
 		count = count + 1;
 	end
 	
-	for i=1:nC    
-		for j=1:nC
-			image1 = labels == i;
-			image2 =  labels == j;
-			image3 = image1 | image2;		
-			[ L num ]  = bwlabel(image3);
-			if num == 1 & i~=j
-				regionList(count, 1) = i;
-				regionList(count, 2) = j;
-				count = count + 1;
-			end
-		end		
-	end		
-	
-	
-	%//=======================================================================
-	%// Find Lowest Regions
-	%//=======================================================================
-	maxDepth = 1000; %-- 195.1cm  -avg height of adult male
-	minDepth = 200; %-- 20cm
-	for i=1:nC
-		flag = 0; %-- set to false
-		closestNeighbour = regions(i);
-		numNeighbours = 0;
-		for j=1:nC
+	%make new neighbours map
+	%set numOfRegions to new number of regions
+
 		
-			if neighbours(i, j) == 1 
-				if (regions(i) > regions(j)) 
-					flag = 1; 					
-					numNeighbours = numNeighbours + 1;
-					if closestNeighbour > regions(i)-regions(j);
-						closestNeighbour = regions(i)-regions(j);
-					end
-				else
-					flag = 0; 
-					break;
-				end			
-			end		
-		end
-		
-		%--Calculate relative depth score
-		depthScore(i,1) = 0;
-		if flag == 1					
-			if closestNeighbour > minDepth && closestNeighbour < maxDepth 
-				depthScore(i,1) = closestNeighbour/(maxDepth-minDepth);
-			elseif closestNeighbour > maxDepth
-				depthScore(i,1) = 1;
-			end						
-		end	
-	end
+
+
 
 	
 	%//=======================================================================
-	%// Find Principle Axes of Regions
+	%// Find PrinumOfRegionsiple Axes of Regions
 	%//=======================================================================
 	minHumanWidth = 368;  %368mm = 36.8cm
 	minHumanLength = 655; %655mm = 65.5cm
 	
-	for i = 1:nC
+	for i = 1:numOfRegions
 		%-- Create list of rows/cols coordinates for perimeter of detection
 		se90 = strel('line', 2, 90);
 		se0 = strel('line', 2, 0);
@@ -236,13 +170,13 @@
 		%figure, plot( x, y, '.r' );
 		
 		
-		%find covariance matrix  (cov will subtract the mean (line 93 in cov.m file))
+		%find covarianumOfRegionse matrix  (cov will subtract the mean (line 93 in cov.m file))
 		C = cov([x y z]);
 		Uprime=[];
 		[m n] = size(C);
 		if isnan(C) | m~=3 | n~=3
-			principleAxis(i,1) = 0;
-			principleAxis(i,2) = 0;
+			prinumOfRegionsipleAxis(i,1) = 0;
+			prinumOfRegionsipleAxis(i,2) = 0;
 		else
 			%find C = UDU' using single variable decomposition
 			[U S V] = svd(C);
@@ -251,12 +185,12 @@
 			A = [x y z]';
 			Uprime = U(:,1:2);
 			B = Uprime'*A;
-			principleAxis(i,1) = max(B (1,:))-min(B (1,:));
-			principleAxis(i,2) = max(B (2,:))-min(B (2,:));
+			prinumOfRegionsipleAxis(i,1) = max(B (1,:))-min(B (1,:));
+			prinumOfRegionsipleAxis(i,2) = max(B (2,:))-min(B (2,:));
 		end
 
-		%Calculate Principle Axes Score	
-		if min(principleAxis(i, :)) > minHumanWidth & max(principleAxis(i, :)) > minHumanLength
+		%Calculate PrinumOfRegionsiple Axes Score	
+		if min(prinumOfRegionsipleAxis(i, :)) > minHumanWidth & max(prinumOfRegionsipleAxis(i, :)) > minHumanLength
 			widthScore(i,1) = 1; 
 		else
 			widthScore(i,1) = 0; 
@@ -266,11 +200,11 @@
 
 	
 	%//=======================================================================
-	%// Find Difference of Candidate Region Area and Boundary Box Area
+	%// Find DifferenumOfRegionse of Candidate Region Area and Boundary Box Area
 	%//=======================================================================
 	aspectRatio=[];
 	boundingBoxArea=[];
-	for i = 1:nC	
+	for i = 1:numOfRegions	
 		[rows cols] = ind2sub(size(img), find(labels==i));
 		boundingBoxArea(i,1) = (max(rows)-min(rows))*(max(cols)-min(cols));
 		aspectRatio(i,1)= length(find(labels==i))/boundingBoxArea(i,1) ;
@@ -279,6 +213,73 @@
 		aspectRatioScore(i,1) = aspectRatio(i,1);
 	end	
 
+	
+
+	
+	
+	%//=======================================================================
+	%// Corrupt Data Handling
+	%//=======================================================================
+	aRSThreshold = 0.3; %-- min aRS score
+	for i = 1:numOfRegions
+		distAvg=0;
+		neighbourCount=0;
+		if regions(i, 1) <=500 %--if the distance is less then 50cm away from the sensor, there is an error in the reading...set it far away
+			
+			if widthScore(i,1) > 0 & aspectRatioScore(i,1) > 0.3
+				%if the widthScore and aspectRatioScore region is larger than x minWidth set the region far away
+				regions(i, 1) = 4000; %-- 4m
+			else
+				%otherwise set the region to the avg of it's neighbours
+				for j = 1:numOfRegions
+					if neighbours(i, j) == 1
+						distAvg=distAvg+regions(j,1);
+						neighbourCount=neighbourCount+1;
+					end
+				end
+				regions(i, 1) = distAvg/neighbourCount;
+			end
+		end
+		
+	end
+				
+	
+	%//=======================================================================
+	%// Find Lowest Regions
+	%//=======================================================================
+	maxDepth = 1000; %-- 195.1cm  -avg height of adult male
+	minDepth = 200; %-- 20cm
+	for i=1:numOfRegions
+		flag = 0; %-- set to false
+		closestNeighbour = regions(i);
+		numNeighbours = 0;
+		for j=1:numOfRegions
+		
+			if neighbours(i, j) == 1 
+				if (regions(i) > regions(j)) 
+					flag = 1; 					
+					numNeighbours = numNeighbours + 1;
+					if closestNeighbour > regions(i)-regions(j);
+						closestNeighbour = regions(i)-regions(j);
+					end
+				else
+					flag = 0; 
+					break;
+				end			
+			end		
+		end
+		
+		%--Calculate relative depth score
+		depthScore(i,1) = 0;
+		if flag == 1					
+			if closestNeighbour > minDepth && closestNeighbour < maxDepth 
+				depthScore(i,1) = closestNeighbour/(maxDepth-minDepth);
+			elseif closestNeighbour > maxDepth
+				depthScore(i,1) = 1;
+			end						
+		end	
+	end
+
 	%//=======================================================================
 	%// Find Absolute Brightness Intensity Score
 	%//=======================================================================
@@ -286,7 +287,7 @@
 	brightnessIntensity=[];
 	YCBCR = rgb2ycbcr(rgbImage);
 	Y = YCBCR(:, :, 1);
-	for i = 1:nC
+	for i = 1:numOfRegions
 		%-- Calculate region brightness averagewidthS	
 		rgbRegionSum = uint64(0);
 		region_idx = find(labels==i);
@@ -311,11 +312,11 @@
 	%//=======================================================================
 	avgBrightnessDiff = 68; %--statistically determined
 	brightnessStd = 23.2367;
-	relativeBrightness = single(zeros(nC, 1));
-	for i = 1:nC
+	relativeBrightness = single(zeros(numOfRegions, 1));
+	for i = 1:numOfRegions
 		brightnessSum = uint64(0);
 		numNeighbours = 0;
-		for j = 1:nC
+		for j = 1:numOfRegions
 			if neighbours(i,j) == 1
 				%avg the intensity
 				brightnessSum = uint64(brightnessIntensity(j,1)) + brightnessSum;
@@ -333,12 +334,12 @@
 			relativeIntensityScore(i,1) = relativeBrightness(i, 1)/(avgBrightnessDiff + brightnessStd);
 		end
 	end	
-		
+
 
 	%//=======================================================================
 	%// Calculate Detection Scores
 	%//=======================================================================
-	for i = 1:nC		
+	for i = 1:numOfRegions		
 		regionBorder(i,1) = 0;
 		[r c] = ind2sub(size(img), find(labels==i));		
 		if min(r) == 1 ... %--top border
@@ -360,14 +361,14 @@
 	%//=======================================================================
 	%figure, imshow(bmapOnImg,[]);
 	scoreVisualization = labels;
-	for i = 1:nC
+	for i = 1:numOfRegions
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
 	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 	%rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','r');
 	
 	M ={};	
-	for i = 1:nC	
+	for i = 1:numOfRegions	
 		if detectionScore(i,1) > 0.4		
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
