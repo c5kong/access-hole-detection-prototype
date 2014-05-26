@@ -1,4 +1,4 @@
-%funumOfRegionstion [ X ] = segmentation(frameNumber, baseDirectory)
+%function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	close all;
 	clc;
@@ -56,8 +56,30 @@
 	img = zImage;		
 	
 
+	%//=======================================================================
+	%// Superpixel segmentation
+	%//=======================================================================
+	nC = 25; % nC is the target number of superpixels.
+	lambda_prime = .5;
+	sigma = 5.0; 
+	conn8 = 1; % flag for using 8 connected grid graph (default setting).
 
+	[labels] = mex_ers(255*double(img)/double(max(img(:))),nC);%-- Call the mex function for superpixel segmentation\
+	labels(labels == 0) = nC; %-- Normalize regions to matlab convention of 1:nC instead of 0:nC-1
+		
+	[height width] = size(labels);
+	[bmap] = seg2bmap(labels,width,height);
+	bmapOnImg = grey_img;
+	idx = find(bmap>0);
+	timg = grey_img;
+	timg(idx) = 255;
+	bmapOnImg(:,:,2) = timg;
+	bmapOnImg(:,:,1) = grey_img;
+	bmapOnImg(:,:,3) = grey_img;
+	%figure, imshow(bmapOnImg,[]);
+	%figure, imshow(labels,[]);
 
+	numOfRegions = nC;
 	
 	%//=======================================================================
 	%// Find neighbours
@@ -79,7 +101,7 @@
 	
 	
 	%//=======================================================================
-	%// Find average distanumOfRegionse for each region (mm)
+	%// Find average distance for each region (mm)
 	%//=======================================================================
 	regions = single(zeros(numOfRegions, 1));				
 	for i=1:(numOfRegions)
@@ -119,7 +141,7 @@
 
 	
 	%//=======================================================================
-	%// Find PrinumOfRegionsiple Axes of Regions
+	%// Find Principle Axes of Regions
 	%//=======================================================================
 	minHumanWidth = 368;  %368mm = 36.8cm
 	minHumanLength = 655; %655mm = 65.5cm
@@ -170,13 +192,13 @@
 		%figure, plot( x, y, '.r' );
 		
 		
-		%find covarianumOfRegionse matrix  (cov will subtract the mean (line 93 in cov.m file))
+		%find covariance matrix  (cov will subtract the mean (line 93 in cov.m file))
 		C = cov([x y z]);
 		Uprime=[];
 		[m n] = size(C);
 		if isnan(C) | m~=3 | n~=3
-			prinumOfRegionsipleAxis(i,1) = 0;
-			prinumOfRegionsipleAxis(i,2) = 0;
+			principleAxis(i,1) = 0;
+			principleAxis(i,2) = 0;
 		else
 			%find C = UDU' using single variable decomposition
 			[U S V] = svd(C);
@@ -185,12 +207,12 @@
 			A = [x y z]';
 			Uprime = U(:,1:2);
 			B = Uprime'*A;
-			prinumOfRegionsipleAxis(i,1) = max(B (1,:))-min(B (1,:));
-			prinumOfRegionsipleAxis(i,2) = max(B (2,:))-min(B (2,:));
+			principleAxis(i,1) = max(B (1,:))-min(B (1,:));
+			principleAxis(i,2) = max(B (2,:))-min(B (2,:));
 		end
 
-		%Calculate PrinumOfRegionsiple Axes Score	
-		if min(prinumOfRegionsipleAxis(i, :)) > minHumanWidth & max(prinumOfRegionsipleAxis(i, :)) > minHumanLength
+		%Calculate Principle Axes Score	
+		if min(principleAxis(i, :)) > minHumanWidth & max(principleAxis(i, :)) > minHumanLength
 			widthScore(i,1) = 1; 
 		else
 			widthScore(i,1) = 0; 
@@ -200,7 +222,7 @@
 
 	
 	%//=======================================================================
-	%// Find DifferenumOfRegionse of Candidate Region Area and Boundary Box Area
+	%// Find Difference of Candidate Region Area and Boundary Box Area
 	%//=======================================================================
 	aspectRatio=[];
 	boundingBoxArea=[];
@@ -213,9 +235,6 @@
 		aspectRatioScore(i,1) = aspectRatio(i,1);
 	end	
 
-	
-
-	
 	
 	%//=======================================================================
 	%// Corrupt Data Handling
