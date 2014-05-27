@@ -375,7 +375,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		else
 			%-- assign a detection score based on the feature scores
 			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
-			detectionScore(i,1) = depthScore(i,1)*contrastScore(i,1) *widthScore(i,1);%*relativeIntensityScore(i,1);
+			detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
 			%detectionScore(i,1) = relativeIntensityScore(i,1);
 		end
 	end	
