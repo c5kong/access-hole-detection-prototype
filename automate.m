@@ -1,6 +1,6 @@
 function X = automate()	
 	tic
-	directory = ('data/openni_data/');	
+	directory = 'data/openni_data/';	
 	
 	
 	%--debugging--%
@@ -267,5 +267,6 @@ function X = automate()
 	segmentation('9_000720', directory);	
 	
 
+	'Total Dataset Runtime'
 	toc
 end

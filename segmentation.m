@@ -1,17 +1,17 @@
 %-- Access Hole Detection Prototype --%
 
-%function [ X ] = segmentation(frameNumber, baseDirectory)
+function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	tic;
 	close all;
 	clc;
-	clear all;
 	
-	frameNumber='12_000180';
+	
+	%frameNumber='12_000180';
 	%frameNumber='11_000000';
 	%frameNumber='11_000060';
 	%frameNumber='9_000720';
-	baseDirectory='data/openni_data/'; 
+	%baseDirectory='data/openni_data/'; 
 
 
 	outputDirectory = strcat(baseDirectory, 'output/');
@@ -370,8 +370,10 @@
 			| max(c) == width ... %-- right border
 			| min(r) == height %-- bottom border
 			regionBorder(i,1) = 1;	
+			%--if the region is along the border, then the score is 0
 			detectionScore(i,1) = 0;
 		else
+			%-- assign a detection score based on the feature scores
 			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
 			detectionScore(i,1) = depthScore(i,1)*contrastScore(i,1) *widthScore(i,1);%*relativeIntensityScore(i,1);
 			%detectionScore(i,1) = relativeIntensityScore(i,1);
@@ -387,14 +389,20 @@
 	for i = 1:numOfRegions
 		scoreVisualization(scoreVisualization == i) = (detectionScore(i)*255); 
 	end
+	
+	%--show scoreVisualization map
 	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	
+	%
 	%rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','r');
 	
 	M ={};	
 	for i = 1:numOfRegions	
-		if detectionScore(i,1) > 0.4		
+		if detectionScore(i,1) > 0		
 			[rows cols] = ind2sub(size(img), find(labels==i));
-			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+			
+			%--display detection
+			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 
 			M{i, 1} = frameNumber;
 			M{i, 2} = min(cols);
@@ -405,16 +413,16 @@
 		end
 	end
 	
+	%--save the scoreVisualization image to output directory
 	%f=getframe(gca);
 	%[X, map] = frame2im(f);
 	%imwrite(X, strcat(outputDirectory, imageName));
 	%hold off;
 	
 	%--write out CSV
-	%dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
-	%clear all;	
-
+	dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
+	
+	clear all;
 	toc;
-%end
-
+end
 
