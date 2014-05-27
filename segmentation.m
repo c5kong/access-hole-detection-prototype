@@ -1,7 +1,10 @@
+%-- Access Hole Detection Prototype --%
+
 %function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	close all;
 	clc;
+	clear all;
 	
 	frameNumber='12_000180';
 	%frameNumber='11_000000';
@@ -59,7 +62,7 @@
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 25; % nC is the target number of superpixels.
+	nC = 15; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -266,7 +269,7 @@
 	%//=======================================================================
 	%// Find Lowest Regions
 	%//=======================================================================
-	maxDepth = 1000; %-- 195.1cm  -avg height of adult male
+	maxDepth = 600; %-- 195.1cm  -avg height of adult male
 	minDepth = 200; %-- 20cm
 	for i=1:numOfRegions
 		flag = 0; %-- set to false
@@ -368,8 +371,8 @@
 			regionBorder(i,1) = 1;	
 			detectionScore(i,1) = 0;
 		else
-			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
-			%detectionScore(i,1) = depthScore(i,1)*contrastScore(i,1) *widthScore(i,1)*relativeIntensityScore(i,1);
+			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
+			detectionScore(i,1) = depthScore(i,1)*contrastScore(i,1) *widthScore(i,1);%*relativeIntensityScore(i,1);
 			%detectionScore(i,1) = relativeIntensityScore(i,1);
 		end
 	end	
