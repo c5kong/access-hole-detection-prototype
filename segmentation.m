@@ -391,25 +391,25 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	end
 	
 	%--show scoreVisualization map
-	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	%figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+
 	
-	%
-	%rectangle('Position',[rectX rectY rectW rectH ], 'LineWidth', 2, 'EdgeColor','r');
-	
-	M ={};	
+	M ={};		
 	for i = 1:numOfRegions	
+		count=0;
 		if detectionScore(i,1) > 0		
+			count= count + 1;
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			
 			%--display detection
 			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 
-			M{i, 1} = frameNumber;
-			M{i, 2} = min(cols);
-			M{i, 3} = min(rows);
-			M{i, 4} = (max(cols)-min(cols));
-			M{i, 5} = (max(rows)-min(rows));
-			M{i, 6} = detectionScore(i,1);			
+			M{count, 1} = frameNumber;
+			M{count, 2} = min(cols);
+			M{count, 3} = min(rows);
+			M{count, 4} = (max(cols)-min(cols));
+			M{count, 5} = (max(rows)-min(rows));
+			M{count, 6} = detectionScore(i,1);			
 		end
 	end
 	
