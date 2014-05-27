@@ -2,6 +2,7 @@
 
 %function [ X ] = segmentation(frameNumber, baseDirectory)
 
+	tic;
 	close all;
 	clc;
 	clear all;
@@ -413,7 +414,7 @@
 	%dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
 	%clear all;	
 
-	
+	toc;
 %end
 
 
