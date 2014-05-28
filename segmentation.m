@@ -374,8 +374,8 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			detectionScore(i,1) = 0;
 		else
 			%-- assign a detection score based on the feature scores
-			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
-			%detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
+			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
+			detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
 			%detectionScore(i,1) = relativeIntensityScore(i,1);
 		end
 	end	
@@ -391,18 +391,18 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	end
 	
 	%--show scoreVisualization map
-	%figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+%	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 
 	
 	M ={};		
+    count=0;
 	for i = 1:numOfRegions	
-		count=0;
 		if detectionScore(i,1) > 0		
 			count= count + 1;
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			
 			%--display detection
-			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+%			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 
 			M{count, 1} = frameNumber;
 			M{count, 2} = min(cols);
@@ -414,10 +414,10 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	end
 	
 	%--save the scoreVisualization image to output directory
-	%f=getframe(gca);
-	%[X, map] = frame2im(f);
-	%imwrite(X, strcat(outputDirectory, imageName));
-	%hold off;
+%	f=getframe(gca);
+%	[X, map] = frame2im(f);
+%	imwrite(X, strcat(outputDirectory, imageName));
+%	hold off;
 	
 	%--write out CSV
 	dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
