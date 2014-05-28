@@ -63,7 +63,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 15; % nC is the target number of superpixels.
+	nC = 8; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
