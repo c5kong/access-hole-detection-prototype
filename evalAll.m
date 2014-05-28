@@ -33,7 +33,7 @@
 %	inputFile = ('output.csv'); 
 %	inputFile = ('avgOutput.csv'); 
 
-inputFile = ('multiplicationScore_normalized.csv'); 
+inputFile = ('meanDetectionScore.csv'); 
 inputDirectory = ('data/openni_data/output/');
 
 tic;
