@@ -1,51 +1,11 @@
-function [ X ] = evaluate(detectionThreshold)
+function [ X ] = evaluate(detectionThreshold, inputFile, inputDirectory)
 
 	clc;
-	%detectionThreshold = 0.5;
 	
 	%//=======================================================================
 	%// Open detection output
 	%//=======================================================================
 
-	
-%	inputFile = ('aspectRatioScore.csv'); 
-%	inputFile = ('aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('contrastScore.csv'); 
-%	inputFile = ('contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
-	%inputFile = ('contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore.csv'); 
-%	inputFile = ('depthScore_aspectRatioScore.csv'); 
-%	inputFile = ('depthScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore_contrastScore.csv'); 
-%	inputFile = ('depthScore_contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('depthScore_contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore_contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore_depthScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore_depthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_contrastScore.csv'); 
-%	inputFile = ('widthScore_contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_depthScore.csv'); 
-%	inputFile = ('widthScore_depthScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_depthScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_depthScore_contrastScore.csv'); 
-%	inputFile = ('widthScore_depthScore_contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_depthScore_contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_depthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('output.csv'); 
-	inputFile = ('avgOutput.csv'); 
-	
-	
-
-	inputDirectory = ('data/openni_data/output/');
 	fileID = fopen(strcat(inputDirectory, inputFile));
 	C = textscan(fileID, '%s %d %d %d %d %f','delimiter', ',', 'EmptyValue', -Inf);
 	fclose(fileID);
@@ -102,7 +62,7 @@ function [ X ] = evaluate(detectionThreshold)
 					largerArea = max(dArea, gtArea);
 					intersection = rectint(dRegion, gtRegion);				
 					
-					if intersection > (0.5*largerArea)
+					if intersection > (0.5*gtArea)
 						%if there is no entry for this img					
 						if length(find(strcmp(dImg, listOfImgs)==1)) == 0
 							%add img to list
