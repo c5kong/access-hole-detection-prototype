@@ -63,7 +63,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 20; % nC is the target number of superpixels.
+	nC = 9; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -149,6 +149,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	minHumanWidth = 368;  %368mm = 36.8cm
 	minHumanLength = 655; %655mm = 65.5cm
+	widthThreshold = 0.9;
 	
 	for i = 1:numOfRegions
 		%-- Create list of rows/cols coordinates for perimeter of detection
@@ -216,7 +217,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end
 
 		%Calculate Principle Axes Score	
-		if min(principleAxis(i, :)) > minHumanWidth & max(principleAxis(i, :)) > minHumanLength
+		if min(principleAxis(i, :)) > (widthThreshold*minHumanWidth) & max(principleAxis(i, :)) > (widthThreshold*minHumanLength)
 			widthScore(i,1) = 1; 
 		else
 			widthScore(i,1) = 0; 
