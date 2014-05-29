@@ -229,7 +229,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	
 	%//=======================================================================
-	%// Find Difference of Candidate Region Area and Boundary Box Area
+	%// Calculate Aspect Ratio Score
 	%//=======================================================================
 	aspectRatio=[];
 	boundingBoxArea=[];
@@ -239,7 +239,13 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		aspectRatio(i,1)= length(find(labels==i))/boundingBoxArea(i,1) ;
 	
 		%Calculate Aspect Ratio Score
-		aspectRatioScore(i,1) = aspectRatio(i,1);
+		%aspectRatioScore(i,1) = aspectRatio(i,1);
+		
+		if (min(principleAxis(i, :)) / max(principleAxis(i, :))) > 	(minHumanWidth / minHumanLength)
+			aspectRatioScore(i,1) = 1;
+		else
+			aspectRatioScore(i,1) = min(principleAxis(i, :)) / max(principleAxis(i, :));
+		end
 	end	
 
 	
