@@ -300,8 +300,8 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		depthScore(i,1) = 0;
 		if flag == 1					
 			if closestNeighbour > minDepth && closestNeighbour < (maxDepth*depthTolerance)
-				depthScore(i,1) = closestNeighbour/(maxDepth*depthTolerance)-minDepth);
-			elseif closestNeighbour > maxDepth*depthTolerance)
+				depthScore(i,1) = closestNeighbour/((maxDepth*depthTolerance)-minDepth);
+			elseif closestNeighbour > (maxDepth*depthTolerance)
 				depthScore(i,1) = 1;
 			end						
 		end	
