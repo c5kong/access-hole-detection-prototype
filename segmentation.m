@@ -273,8 +273,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	%// Find Lowest Regions
 	%//=======================================================================
-	maxDepth = 600; %-- 195.1cm  -avg height of adult male
+	maxDepth = 1951; %-- 195.1cm  -avg height of adult male
 	minDepth = 200; %-- 20cm
+	depthTolerance = .31;  %-- 31% is baseline
 	for i=1:numOfRegions
 		flag = 0; %-- set to false
 		closestNeighbour = regions(i);
@@ -298,9 +299,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		%--Calculate relative depth score
 		depthScore(i,1) = 0;
 		if flag == 1					
-			if closestNeighbour > minDepth && closestNeighbour < maxDepth 
-				depthScore(i,1) = closestNeighbour/(maxDepth-minDepth);
-			elseif closestNeighbour > maxDepth
+			if closestNeighbour > minDepth && closestNeighbour < (maxDepth*depthTolerance)
+				depthScore(i,1) = closestNeighbour/(maxDepth*depthTolerance)-minDepth);
+			elseif closestNeighbour > maxDepth*depthTolerance)
 				depthScore(i,1) = 1;
 			end						
 		end	
