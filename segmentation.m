@@ -220,7 +220,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		if min(principleAxis(i, :)) > (minHumanWidth) & max(principleAxis(i, :)) > (minHumanLength)
 			widthScore(i,1) = 1; 
 		elseif min(principleAxis(i, :)) > (widthThreshold*minHumanWidth) & max(principleAxis(i, :)) > (widthThreshold*minHumanLength)
-			widthScore(i,1) = min((min(principleAxis(i, :))/minHumanWidth),(max(principleAxis(i, :))/minHumanLength)); 		
+			widthScore(i,1) = max((min(principleAxis(i, :))/minHumanWidth),(max(principleAxis(i, :))/minHumanLength)); 		
 		else
 			widthScore(i,1) = 0; 
 		end
