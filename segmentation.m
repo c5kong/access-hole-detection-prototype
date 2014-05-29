@@ -237,15 +237,23 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		[rows cols] = ind2sub(size(img), find(labels==i));
 		boundingBoxArea(i,1) = (max(rows)-min(rows))*(max(cols)-min(cols));
 		aspectRatio(i,1)= length(find(labels==i))/boundingBoxArea(i,1) ;
-	
-		%Calculate Aspect Ratio Score
 		%aspectRatioScore(i,1) = aspectRatio(i,1);
+	
+	
+		%if (min(principleAxis(i, :)) / max(principleAxis(i, :))) > 	(minHumanWidth / minHumanLength)
+		%	aspectRatioScore(i,1) = 1;
+		%else
+		%	aspectRatioScore(i,1) = min(principleAxis(i, :)) / max(principleAxis(i, :));
+		%end
 		
-		if (min(principleAxis(i, :)) / max(principleAxis(i, :))) > 	(minHumanWidth / minHumanLength)
-			aspectRatioScore(i,1) = 1;
+		aspectRatio(i,1)= length(find(labels==i))/(min(principleAxis(i, :)) * max(principleAxis(i, :)))
+		if aspectRatio(i,1) > 1
+			aspectRatioScore(i,1) = 1;		
 		else
-			aspectRatioScore(i,1) = min(principleAxis(i, :)) / max(principleAxis(i, :));
+			aspectRatioScore(i,1) = aspectRatio(i,1);		
 		end
+		
+		
 	end	
 
 	
