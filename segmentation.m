@@ -149,7 +149,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	minHumanWidth = 368;  %368mm = 36.8cm
 	minHumanLength = 655; %655mm = 65.5cm
-	widthThreshold = 0.9;
+	widthThreshold = 0.5;
 	
 	for i = 1:numOfRegions
 		%-- Create list of rows/cols coordinates for perimeter of detection
@@ -217,8 +217,10 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end
 
 		%Calculate Principle Axes Score	
-		if min(principleAxis(i, :)) > (widthThreshold*minHumanWidth) & max(principleAxis(i, :)) > (widthThreshold*minHumanLength)
+		if min(principleAxis(i, :)) > (minHumanWidth) & max(principleAxis(i, :)) > (minHumanLength)
 			widthScore(i,1) = 1; 
+		elseif min(principleAxis(i, :)) > (widthThreshold*minHumanWidth) & max(principleAxis(i, :)) > (widthThreshold*minHumanLength)
+			widthScore(i,1) = min((min(principleAxis(i, :))/minHumanWidth),(max(principleAxis(i, :))/minHumanLength)); 		
 		else
 			widthScore(i,1) = 0; 
 		end
