@@ -33,7 +33,7 @@
 %	inputFile = ('output.csv'); 
 %	inputFile = ('avgOutput.csv'); 
 
-inputFile = ('meanDetectionScore_20SP.csv'); 
+inputFile = ('meanDetectionScore_9SP_wMin.csv'); 
 inputDirectory = ('data/openni_data/output/');
 
 tic;
