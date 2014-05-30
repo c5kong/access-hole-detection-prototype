@@ -1,5 +1,5 @@
 
-inputFile = ('train_d70.csv'); 
+inputFile = ('train_dt70.csv'); 
 inputDirectory = ('data/openni_data/output/');
 
 tic;

@@ -288,8 +288,8 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%// Find Lowest Regions
 	%//=======================================================================
 	maxDepth = 1951; %-- 195.1cm  -avg height of adult male
-	minDepth = 300; %-- 20cm
-	depthTolerance = .31;  %-- 31% is baseline
+	minDepth = 200; %-- 20cm
+	depthTolerance = .7;  %-- 31% is baseline
 	for i=1:numOfRegions
 		flag = 0; %-- set to false
 		closestNeighbour = regions(i);
