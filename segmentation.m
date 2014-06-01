@@ -1,17 +1,17 @@
 %-- Access Hole Detection Prototype --%
 
-function [ X ] = segmentation(frameNumber, baseDirectory)
+%function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	tic;
 	close all;
 	clc;
 	
 	
-	%frameNumber='12_000180';
+	frameNumber='12_000180';
 	%frameNumber='11_000000';
 	%frameNumber='11_000060';
 	%frameNumber='9_000720';
-	%baseDirectory='data/openni_data/'; 
+	baseDirectory='data/openni_data/'; 
 
 
 	outputDirectory = strcat(baseDirectory, 'output/');
@@ -80,7 +80,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	%figure, imshow(bmapOnImg,[]);
+	figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	numOfRegions = nC;
@@ -90,7 +90,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	neighbours = zeros(numOfRegions, numOfRegions);
 	for i=1:numOfRegions
-		for j=1:numOfRegions
+		for j=i:numOfRegions
 			image1 = labels == i;
 			image2 =  labels == j;
 			image3 = image1 | image2;		
@@ -271,7 +271,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 				regions(i, 1) = 4000; %-- 4m
 			else
 				%otherwise set the region to the avg of it's neighbours
-				for j = 1:numOfRegions
+				for j = i:numOfRegions
 					if neighbours(i, j) == 1
 						distAvg=distAvg+regions(j,1);
 						neighbourCount=neighbourCount+1;
@@ -289,12 +289,12 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	maxDepth = 1951; %-- 195.1cm  -avg height of adult male
 	minDepth = 200; %-- 20cm
-	depthTolerance = .7;  %-- 31% is baseline
+	depthTolerance = .31;  %-- 31% is baseline
 	for i=1:numOfRegions
 		flag = 0; %-- set to false
 		closestNeighbour = regions(i);
 		numNeighbours = 0;
-		for j=1:numOfRegions
+		for j=i:numOfRegions
 		
 			if neighbours(i, j) == 1 
 				if (regions(i) > regions(j)) 
@@ -357,7 +357,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	for i = 1:numOfRegions
 		brightnessSum = uint64(0);
 		numNeighbours = 0;
-		for j = 1:numOfRegions
+		for j=i:numOfRegions
 			if neighbours(i,j) == 1
 				%avg the intensity
 				brightnessSum = uint64(brightnessIntensity(j,1)) + brightnessSum;
@@ -392,9 +392,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			detectionScore(i,1) = 0;
 		else
 			%-- assign a detection score based on the feature scores
-			detectionScore(i,1) = ((0.4/3)*depthScore(i,1)) + ((0.4/3)*widthScore(i,1)) + ((0.4/3)*aspectRatioScore(i,1)) + (0.3*contrastScore(i,1)) + (0.3*relativeIntensityScore(i,1));
+			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
 			%detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
-			
+			%detectionScore(i,1) = relativeIntensityScore(i,1);
 		end
 	end	
 
@@ -409,7 +409,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	end
 	
 	%--show scoreVisualization map
-%	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 
 	
 	M ={};		
@@ -420,7 +420,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			
 			%--display detection
-%			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 
 			M{count, 1} = frameNumber;
 			M{count, 2} = min(cols);
@@ -438,9 +438,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 %	hold off;
 	
 	%--write out CSV
-	dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
+	%dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
 	
-	clear all;
+	%clear all;
 	toc;
-end
+%end
 
