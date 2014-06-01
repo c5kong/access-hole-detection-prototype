@@ -6,13 +6,11 @@
 	close all;
 	clc;
 	
-	
 	frameNumber='12_000180';
 	%frameNumber='11_000000';
 	%frameNumber='11_000060';
 	%frameNumber='9_000720';
 	baseDirectory='data/openni_data/'; 
-
 
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
@@ -26,9 +24,6 @@
 	imageName = strcat(frameNumber, '.png');
 	depthDirectory = strcat(baseDirectory, 'metric/');
 	rgbDirectory = strcat(baseDirectory, 'rgb/');
-	%xImage = imread(strcat(depthDirectory,strcat('x_', imageName)));
-	%yImage = imread(strcat(depthDirectory,strcat('y_', imageName)));
-	%zImage = imread(strcat(depthDirectory,strcat('z_', imageName)));
 	rgbImage = imread(strcat(rgbDirectory,strcat('rgb_', imageName)));	
 	grey_img = rgb2gray(rgbImage);
 
@@ -37,7 +32,6 @@
 	x = fread(fid, inf, '*short');	
 	fclose(fid);
 	xImage = vec2mat(x,640);
-	
 	
 	fid = fopen(strcat(depthDirectory,strcat('y_', binaryName)));
 	y = fread(fid, inf, '*short');	
@@ -48,22 +42,13 @@
 	z = fread(fid, inf, '*short');	
 	fclose(fid);
 	zImage = vec2mat(z,640);
-	
-	%-- Code to read in Ascii
-	%>> x = textread('x_000060.txt','%d');
-	%>> y = textread('y_000060.txt','%d');
-	%>> z = textread('z_000060.txt','%d');
-	%>> x=x';
-	%>> y=y';
-	% z=z';
-
 	img = zImage;		
 	
 
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 9; % nC is the target number of superpixels.
+	nC = 30; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -104,28 +89,35 @@
 	end
 	
 	
-	%//=======================================================================
-	%// Find average distance for each region (mm)
-	%//=======================================================================
-	regions = single(zeros(numOfRegions, 1));				
-	for i=1:(numOfRegions)
-		regionSum = uint64(0);
-		region_idx = find(labels==i);
 
+	%//=======================================================================
+	%// Find Absolute Brightness Intensity Score
+	%//=======================================================================
+	maxIntensity = 70;
+	brightnessIntensity=[];
+	YCBCR = rgb2ycbcr(rgbImage);
+	Y = YCBCR(:, :, 1);
+	for i = 1:numOfRegions
+		%-- Calculate region brightness averagewidthS	
+		rgbRegionSum = uint64(0);
+		region_idx = find(labels==i);
 		for j=1:length(region_idx)
-			regionSum = uint64(img(region_idx(j))) + regionSum;
+			rgbRegionSum = uint64(Y(region_idx(j))) + rgbRegionSum;
+		end
+		brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
+	
+		%Calculate Brightness Score
+		
+		if brightnessIntensity(i,1) > maxIntensity
+			contrastScore(i,1) = 0;
+		else
+			contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
 		end
 		
-		if regionSum ~=0
-			regions(i, 1) = regionSum/length(region_idx);
-		else
-			regions(i, 1) = 0;
-		end
 	end	
 	
-
 	%//=======================================================================
-	%// Find greedy superpixel combinations
+	%// Combine dark superpixels who are neighbours
 	%//=======================================================================
 	
 	%--TODO
@@ -138,6 +130,11 @@
 	
 	%make new neighbours map
 	%set numOfRegions to new number of regions
+	
+	
+
+
+
 
 		
 
@@ -258,6 +255,26 @@
 
 	
 	%//=======================================================================
+	%// Find average distance for each region (mm)
+	%//=======================================================================
+	regions = single(zeros(numOfRegions, 1));				
+	for i=1:(numOfRegions)
+		regionSum = uint64(0);
+		region_idx = find(labels==i);
+
+		for j=1:length(region_idx)
+			regionSum = uint64(img(region_idx(j))) + regionSum;
+		end
+		
+		if regionSum ~=0
+			regions(i, 1) = regionSum/length(region_idx);
+		else
+			regions(i, 1) = 0;
+		end
+	end	
+		
+	
+	%//=======================================================================
 	%// Corrupt Data Handling
 	%//=======================================================================
 	aRSThreshold = 0.3; %-- min aRS score
@@ -320,32 +337,6 @@
 			end						
 		end	
 	end
-
-	%//=======================================================================
-	%// Find Absolute Brightness Intensity Score
-	%//=======================================================================
-	maxIntensity = 70;
-	brightnessIntensity=[];
-	YCBCR = rgb2ycbcr(rgbImage);
-	Y = YCBCR(:, :, 1);
-	for i = 1:numOfRegions
-		%-- Calculate region brightness averagewidthS	
-		rgbRegionSum = uint64(0);
-		region_idx = find(labels==i);
-		for j=1:length(region_idx)
-			rgbRegionSum = uint64(Y(region_idx(j))) + rgbRegionSum;
-		end
-		brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
-	
-		%Calculate Brightness Score
-		
-		if brightnessIntensity(i,1) > maxIntensity
-			contrastScore(i,1) = 0;
-		else
-			contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
-		end
-		
-	end	
 
 	
 	%//=======================================================================
