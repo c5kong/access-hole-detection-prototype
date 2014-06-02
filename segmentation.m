@@ -1,16 +1,16 @@
 %-- Access Hole Detection Prototype --%
 
-%function [ X ] = segmentation(frameNumber, baseDirectory)
+function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	tic;
 	close all;
 	clc;
 	
-	frameNumber='12_000180';
+	%frameNumber='12_000180';
 	%frameNumber='11_000000';
 	%frameNumber='11_000060';
 	%frameNumber='9_000720';
-	baseDirectory='data/openni_data/'; 
+	%baseDirectory='data/openni_data/'; 
 
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
@@ -48,7 +48,7 @@
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 20; % nC is the target number of superpixels.
+	nC = 40; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -93,12 +93,10 @@
 					elseif num == 1
 						neighbours(i, j) = 1;			
 					end
-
 				end
 			end		
 		end
-		
-		
+			
 
 		%//=======================================================================
 		%// Find Absolute Brightness Intensity Score
@@ -128,7 +126,6 @@
 
 		%//=======================================================================
 		%// Combine dark superpixels who are neighbours
-		%//=======================================================================
 		listOfCombined=[];
 		for i=1:numOfRegions
 			combinedRegionA = find(listOfCombined == i);
@@ -145,13 +142,9 @@
 			end
 		end
 
-
 	end
 	%figure, imshow(labels,[]);
 		
-
-
-
 	
 	%//=======================================================================
 	%// Find Principle Axes of Regions
@@ -199,8 +192,7 @@
 		
 		x=double(x);
 		y=double(y);
-		z=double(z);
-		
+		z=double(z);		
 		% draw data
 		%figure, plot3( x, y, z, '.r' );
 		%figure, plot( x, y, '.r' );
@@ -233,7 +225,6 @@
 		else
 			widthScore(i,1) = 0; 
 		end
-
 	end
 
 	
@@ -251,9 +242,7 @@
 			aspectRatioScore(i,1) = 1;		
 		else
 			aspectRatioScore(i,1) = aspectRatio(i,1);		
-		end
-		
-		
+		end		
 	end	
 
 	
@@ -322,8 +311,6 @@
 			if neighbours(i, j) == 1 
 				if (regions(i) > regions(j)) 
 					flag = 1; 
-i
-j
 					if closestNeighbour > regions(i)-regions(j);
 						closestNeighbour = regions(i)-regions(j);
 					end
@@ -333,8 +320,6 @@ j
 				end			
 			end		
 		end
-		
-		
 		
 		%--Calculate relative depth score
 		depthScore(i,1) = 0;
@@ -395,7 +380,7 @@ j
 			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
 			%detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
 			%detectionScore(i,1) = relativeIntensityScore(i,1);
-			detectionScore(i,1) = depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1);
+			detectionScore(i,1) = depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
 
 		end
 	end	
@@ -411,7 +396,7 @@ j
 	end
 	
 	%--show scoreVisualization map
-	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+	%figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 
 	
 	M ={};		
@@ -422,7 +407,7 @@ j
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			
 			%--display detection
-			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
+			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 3, 'EdgeColor','g');
 
 			M{count, 1} = frameNumber;
 			M{count, 2} = min(cols);
@@ -440,9 +425,9 @@ j
 %	hold off;
 	
 	%--write out CSV
-	%dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
+	dlmcell(strcat(outputDirectory, 'avgOutput.csv'), M, ',', '-a');
 	
-	%clear all;
+	clear all;
 	toc;
-%end
+end
 
