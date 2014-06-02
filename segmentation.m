@@ -78,7 +78,7 @@
 		
 		neighbours = zeros(numOfRegions, numOfRegions);
 		for i=1:numOfRegions
-			for j=i:numOfRegions
+			for j=1:numOfRegions
 				regionA = find(labels==i);
 				regionB = find(labels==j);		
 				if (isempty(regionA) | isempty(regionB) )
@@ -133,7 +133,7 @@
 		for i=1:numOfRegions
 			combinedRegionA = find(listOfCombined == i);
 			if isempty(combinedRegionA) 
-				for j=i:numOfRegions
+				for j=1:numOfRegions
 					combinedRegionB = find(listOfCombined == i);
 					if isempty(combinedRegionB) 
 						if neighbours(i, j) == 1 & contrastScore(i,1) > 0.6 & contrastScore(j,1) > 0.6;
@@ -317,13 +317,13 @@
 	for i=1:numOfRegions
 		flag = 0; %-- set to false
 		closestNeighbour = regions(i);
-		numNeighbours = 0;
-		for j=i:numOfRegions
-		
+
+		for j=1:numOfRegions
 			if neighbours(i, j) == 1 
 				if (regions(i) > regions(j)) 
-					flag = 1; 					
-					numNeighbours = numNeighbours + 1;
+					flag = 1; 
+i
+j
 					if closestNeighbour > regions(i)-regions(j);
 						closestNeighbour = regions(i)-regions(j);
 					end
@@ -333,6 +333,8 @@
 				end			
 			end		
 		end
+		
+		
 		
 		%--Calculate relative depth score
 		depthScore(i,1) = 0;
@@ -355,7 +357,7 @@
 	for i = 1:numOfRegions
 		brightnessSum = uint64(0);
 		numNeighbours = 0;
-		for j=i:numOfRegions
+		for j=1:numOfRegions
 			if neighbours(i,j) == 1
 				%avg the intensity
 				brightnessSum = uint64(brightnessIntensity(j,1)) + brightnessSum;
