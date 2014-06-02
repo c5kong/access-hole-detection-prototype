@@ -6,11 +6,13 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	close all;
 	clc;
 	
+	
 	%frameNumber='12_000180';
 	%frameNumber='11_000000';
 	%frameNumber='11_000060';
 	%frameNumber='9_000720';
 	%baseDirectory='data/openni_data/'; 
+
 
 	outputDirectory = strcat(baseDirectory, 'output/');
 	frameNumber		
@@ -24,6 +26,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	imageName = strcat(frameNumber, '.png');
 	depthDirectory = strcat(baseDirectory, 'metric/');
 	rgbDirectory = strcat(baseDirectory, 'rgb/');
+	%xImage = imread(strcat(depthDirectory,strcat('x_', imageName)));
+	%yImage = imread(strcat(depthDirectory,strcat('y_', imageName)));
+	%zImage = imread(strcat(depthDirectory,strcat('z_', imageName)));
 	rgbImage = imread(strcat(rgbDirectory,strcat('rgb_', imageName)));	
 	grey_img = rgb2gray(rgbImage);
 
@@ -32,6 +37,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	x = fread(fid, inf, '*short');	
 	fclose(fid);
 	xImage = vec2mat(x,640);
+	
 	
 	fid = fopen(strcat(depthDirectory,strcat('y_', binaryName)));
 	y = fread(fid, inf, '*short');	
@@ -42,13 +48,22 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	z = fread(fid, inf, '*short');	
 	fclose(fid);
 	zImage = vec2mat(z,640);
+	
+	%-- Code to read in Ascii
+	%>> x = textread('x_000060.txt','%d');
+	%>> y = textread('y_000060.txt','%d');
+	%>> z = textread('z_000060.txt','%d');
+	%>> x=x';
+	%>> y=y';
+	% z=z';
+
 	img = zImage;		
 	
 
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 40; % nC is the target number of superpixels.
+	nC = 9; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -70,81 +85,64 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 
 	numOfRegions = nC;
 	
-
-	for k=1:3
-		%//=======================================================================
-		%// Find neighbours
-		combineLoopCheck = numOfRegions;
-		
-		neighbours = zeros(numOfRegions, numOfRegions);
-		for i=1:numOfRegions
-			for j=1:numOfRegions
-				regionA = find(labels==i);
-				regionB = find(labels==j);		
-				if (isempty(regionA) | isempty(regionB) )
-					neighbours(i, j) = 0;
-				else				
-					image1 = labels == i;
-					image2 =  labels == j;
-					image3 = image1 | image2;		
-					[ L num ]  = bwlabel(image3);
-					if i==j
-						neighbours(i, j) = 0;
-					elseif num == 1
-						neighbours(i, j) = 1;			
-					end
-				end
-			end		
-		end
-			
-
-		%//=======================================================================
-		%// Find Absolute Brightness Intensity Score
-		maxIntensity = 70;
-		contrastScore =[];
-		brightnessIntensity=[];
-		YCBCR = rgb2ycbcr(rgbImage);
-		Y = YCBCR(:, :, 1);
-		for i = 1:numOfRegions
-			%-- Calculate region brightness averagewidthS	
-			rgbRegionSum = uint64(0);
-			region_idx = find(labels==i);
-
-			for j=1:length(region_idx)
-				rgbRegionSum = uint64(Y(region_idx(j))) + rgbRegionSum;
+	%//=======================================================================
+	%// Find neighbours
+	%//=======================================================================
+	neighbours = zeros(numOfRegions, numOfRegions);
+	for i=1:numOfRegions
+		for j=1:numOfRegions
+			image1 = labels == i;
+			image2 =  labels == j;
+			image3 = image1 | image2;		
+			[ L num ]  = bwlabel(image3);
+			if i==j
+				neighbours(i, j) = 0;
+			elseif num == 1
+				neighbours(i, j) = 1;			
 			end
-			brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
-		
-			%Calculate Brightness Score
-			if brightnessIntensity(i,1) > maxIntensity
-				contrastScore(i,1) = 0;
-			else
-				contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
-			end
-			
-		end	
-
-		%//=======================================================================
-		%// Combine dark superpixels who are neighbours
-		listOfCombined=[];
-		for i=1:numOfRegions
-			combinedRegionA = find(listOfCombined == i);
-			if isempty(combinedRegionA) 
-				for j=1:numOfRegions
-					combinedRegionB = find(listOfCombined == i);
-					if isempty(combinedRegionB) 
-						if neighbours(i, j) == 1 & contrastScore(i,1) > 0.6 & contrastScore(j,1) > 0.6;
-							labels(labels == j) = i;
-							listOfCombined = [listOfCombined; j];
-						end
-					end
-				end
-			end
-		end
-
+		end		
 	end
-	%figure, imshow(labels,[]);
+	
+	
+	%//=======================================================================
+	%// Find average distance for each region (mm)
+	%//=======================================================================
+	regions = single(zeros(numOfRegions, 1));				
+	for i=1:(numOfRegions)
+		regionSum = uint64(0);
+		region_idx = find(labels==i);
+
+		for j=1:length(region_idx)
+			regionSum = uint64(img(region_idx(j))) + regionSum;
+		end
 		
+		if regionSum ~=0
+			regions(i, 1) = regionSum/length(region_idx);
+		else
+			regions(i, 1) = 0;
+		end
+	end	
+	
+
+	%//=======================================================================
+	%// Find greedy superpixel combinations
+	%//=======================================================================
+	
+	%--TODO
+	count = 1;
+	regionList=[];
+	for i=1:numOfRegions
+		regionList(count, 1) = count;
+		count = count + 1;
+	end
+	
+	%make new neighbours map
+	%set numOfRegions to new number of regions
+
+		
+
+
+
 	
 	%//=======================================================================
 	%// Find Principle Axes of Regions
@@ -192,7 +190,8 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		
 		x=double(x);
 		y=double(y);
-		z=double(z);		
+		z=double(z);
+		
 		% draw data
 		%figure, plot3( x, y, z, '.r' );
 		%figure, plot( x, y, '.r' );
@@ -218,13 +217,14 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end
 
 		%Calculate Principle Axes Score	
-		if max(principleAxis(i, :)) > (minHumanLength)
+		if min(principleAxis(i, :)) > (minHumanWidth) & max(principleAxis(i, :)) > (minHumanLength)
 			widthScore(i,1) = 1; 
-		elseif max(principleAxis(i, :)) > (widthThreshold*minHumanLength)
-			widthScore(i,1) = (max(principleAxis(i, :))/minHumanLength); 		
+		elseif min(principleAxis(i, :)) > (widthThreshold*minHumanWidth) & max(principleAxis(i, :)) > (widthThreshold*minHumanLength)
+			widthScore(i,1) = max((min(principleAxis(i, :))/minHumanWidth),(max(principleAxis(i, :))/minHumanLength)); 		
 		else
 			widthScore(i,1) = 0; 
 		end
+
 	end
 
 	
@@ -234,41 +234,28 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	aspectRatio=[];
 	boundingBoxArea=[];
 	for i = 1:numOfRegions	
-	%if the region is not empty matrix
-	%TODO
 		[rows cols] = ind2sub(size(img), find(labels==i));
+		boundingBoxArea(i,1) = (max(rows)-min(rows))*(max(cols)-min(cols));
+		aspectRatio(i,1)= length(find(labels==i))/boundingBoxArea(i,1) ;
+		%aspectRatioScore(i,1) = aspectRatio(i,1);
+	
+	
+		%if (min(principleAxis(i, :)) / max(principleAxis(i, :))) > 	(minHumanWidth / minHumanLength)
+		%	aspectRatioScore(i,1) = 1;
+		%else
+		%	aspectRatioScore(i,1) = min(principleAxis(i, :)) / max(principleAxis(i, :));
+		%end
+		
 		aspectRatio(i,1)= length(find(labels==i))/(min(principleAxis(i, :)) * max(principleAxis(i, :)));
 		if aspectRatio(i,1) > 1
 			aspectRatioScore(i,1) = 1;		
 		else
 			aspectRatioScore(i,1) = aspectRatio(i,1);		
-		end		
-	end	
-
-	
-	%//=======================================================================
-	%// Find average distance for each region (mm)
-	%//=======================================================================
-	regions = single(zeros(numOfRegions, 1));				
-	for i=1:(numOfRegions)
-		regionSum = uint64(0);
-		region_idx = find(labels==i);
-
-		for j=1:length(region_idx)
-			if uint64(img(region_idx(j))) == 0
-				regionSum = 4000 + regionSum;
-			else
-				regionSum = uint64(img(region_idx(j))) + regionSum;
-			end
 		end
 		
-		if regionSum ~=0
-			regions(i, 1) = regionSum/length(region_idx);
-		else
-			regions(i, 1) = 0;
-		end
-	end	
 		
+	end	
+
 	
 	%//=======================================================================
 	%// Corrupt Data Handling
@@ -284,7 +271,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 				regions(i, 1) = 4000; %-- 4m
 			else
 				%otherwise set the region to the avg of it's neighbours
-				for j = i:numOfRegions
+				for j = 1:numOfRegions
 					if neighbours(i, j) == 1
 						distAvg=distAvg+regions(j,1);
 						neighbourCount=neighbourCount+1;
@@ -306,11 +293,13 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	for i=1:numOfRegions
 		flag = 0; %-- set to false
 		closestNeighbour = regions(i);
-
+		numNeighbours = 0;
 		for j=1:numOfRegions
+		
 			if neighbours(i, j) == 1 
 				if (regions(i) > regions(j)) 
-					flag = 1; 
+					flag = 1; 					
+					numNeighbours = numNeighbours + 1;
 					if closestNeighbour > regions(i)-regions(j);
 						closestNeighbour = regions(i)-regions(j);
 					end
@@ -332,6 +321,32 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end	
 	end
 
+	%//=======================================================================
+	%// Find Absolute Brightness Intensity Score
+	%//=======================================================================
+	maxIntensity = 70;
+	brightnessIntensity=[];
+	YCBCR = rgb2ycbcr(rgbImage);
+	Y = YCBCR(:, :, 1);
+	for i = 1:numOfRegions
+		%-- Calculate region brightness averagewidthS	
+		rgbRegionSum = uint64(0);
+		region_idx = find(labels==i);
+		for j=1:length(region_idx)
+			rgbRegionSum = uint64(Y(region_idx(j))) + rgbRegionSum;
+		end
+		brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
+	
+		%Calculate Brightness Score
+		
+		if brightnessIntensity(i,1) > maxIntensity
+			contrastScore(i,1) = 0;
+		else
+			contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
+		end
+		
+	end	
+
 	
 	%//=======================================================================
 	%// Find Relative Brightness Intensity Score
@@ -342,7 +357,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	for i = 1:numOfRegions
 		brightnessSum = uint64(0);
 		numNeighbours = 0;
-		for j=1:numOfRegions
+		for j = 1:numOfRegions
 			if neighbours(i,j) == 1
 				%avg the intensity
 				brightnessSum = uint64(brightnessIntensity(j,1)) + brightnessSum;
@@ -377,11 +392,9 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			detectionScore(i,1) = 0;
 		else
 			%-- assign a detection score based on the feature scores
-			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
+			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
 			%detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
 			%detectionScore(i,1) = relativeIntensityScore(i,1);
-			detectionScore(i,1) = depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
-
 		end
 	end	
 
@@ -396,7 +409,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	end
 	
 	%--show scoreVisualization map
-	%figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
+%	figure, imshow(scoreVisualization, []), colormap(gray), axis off, hold on
 
 	
 	M ={};		
@@ -407,7 +420,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			
 			%--display detection
-			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 3, 'EdgeColor','g');
+%			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 2, 'EdgeColor','g');
 
 			M{count, 1} = frameNumber;
 			M{count, 2} = min(cols);
