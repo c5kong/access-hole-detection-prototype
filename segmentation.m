@@ -361,6 +361,33 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end
 	end	
 
+	%//=======================================================================
+	%// Find Absolute Brightness Intensity Score
+	%//=======================================================================
+	
+	maxIntensity = 70;
+	contrastScore =[];
+	brightnessIntensity=[];
+	YCBCR = rgb2ycbcr(rgbImage);
+	Y = YCBCR(:, :, 1);
+	for i = 1:numOfRegions
+		%-- Calculate region brightness averagewidthS	
+		rgbRegionSum = uint64(0);
+		region_idx = find(labels==i);
+
+		for j=1:length(region_idx)
+			rgbRegionSum = uint64(Y(region_idx(j))) + rgbRegionSum;
+		end
+		brightnessIntensity(i,1) = rgbRegionSum/length(region_idx);	
+	
+		%Calculate Brightness Score
+		if brightnessIntensity(i,1) > maxIntensity
+			contrastScore(i,1) = 0;
+		else
+			contrastScore(i,1) = 1-(brightnessIntensity(i,1)/maxIntensity);
+		end
+		
+	end		
 
 	%//=======================================================================
 	%// Calculate Detection Scores
@@ -381,7 +408,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			%detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
 			%detectionScore(i,1) = relativeIntensityScore(i,1);
 			%detectionScore(i,1) = depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
-			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1))/3;
+			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1)+ contrastScore(i,1))/4;
 
 		end
 	end	
