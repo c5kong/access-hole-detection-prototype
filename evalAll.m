@@ -1,39 +1,7 @@
-%	inputFile = ('aspectRatioScore.csv'); 
-%	inputFile = ('aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('contrastScore.csv'); 
-%	inputFile = ('contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
-	%inputFile = ('contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore.csv'); 
-%	inputFile = ('depthScore_aspectRatioScore.csv'); 
-%	inputFile = ('depthScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore_contrastScore.csv'); 
-%	inputFile = ('depthScore_contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('depthScore_contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore_contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('depthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore_depthScore.csv'); 
-%	inputFile = ('widthScore_aspectRatioScore_relativeIntensityScore_depthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_contrastScore.csv'); 
-%	inputFile = ('widthScore_contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_contrastScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_depthScore.csv'); 
-%	inputFile = ('widthScore_depthScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_depthScore_aspectRatioScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_depthScore_contrastScore.csv'); 
-%	inputFile = ('widthScore_depthScore_contrastScore_aspectRatioScore.csv'); 
-%	inputFile = ('widthScore_depthScore_contrastScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_depthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('widthScore_relativeIntensityScore.csv'); 
-%	inputFile = ('output.csv'); 
+
 %	inputFile = ('avgOutput.csv'); 
 
-inputFile = ('meanDetectionScore_9SP_wMax_d51_ar2_illum1.csv'); 
+inputFile = ('baseline.csv'); 
 inputDirectory = ('data/openni_data/output/');
 
 tic;
