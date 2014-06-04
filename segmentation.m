@@ -71,7 +71,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	numOfRegions = nC;
 	
 
-	for k=1:3
+	for k=1:5
 		%//=======================================================================
 		%// Find neighbours
 		combineLoopCheck = numOfRegions;
@@ -97,6 +97,8 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			end		
 		end
 			
+			%%TODO
+			%%if region is on the border, remove from the neighbourhood
 
 		%//=======================================================================
 		%// Find Absolute Brightness Intensity Score
@@ -143,7 +145,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 		end
 
 	end
-	figure, imshow(labels,[]);
+	%figure, imshow(labels,[]);
 		
 	
 	%//=======================================================================
@@ -435,7 +437,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			
 			%--display detection
-			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 3, 'EdgeColor','g');
+			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 3, 'EdgeColor','g');
 
 			M{count, 1} = frameNumber;
 			M{count, 2} = min(cols);
