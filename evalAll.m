@@ -1,7 +1,7 @@
 
 %	inputFile = ('avgOutput.csv'); 
 
-inputFile = ('baseline.csv'); 
+inputFile = ('combine_cleanset_mean_3g_contrast.csv'); 
 inputDirectory = ('data/openni_data/output/');
 
 tic;

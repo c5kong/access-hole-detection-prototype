@@ -53,11 +53,8 @@ function X = automate()
 	segmentation('13_000240', directory);
 	segmentation('13_000300', directory);
 	segmentation('13_000360', directory);
-	segmentation('13_000420', directory);
 	segmentation('13_000480', directory);
-	segmentation('13_000540', directory);
 	segmentation('13_000600', directory);
-	segmentation('13_000660', directory);
 	segmentation('13_000720', directory);
 	segmentation('13_000780', directory);
 	segmentation('13_000840', directory);
@@ -114,7 +111,6 @@ function X = automate()
 	segmentation('1_000300', directory);
 	segmentation('1_000360', directory);
 	segmentation('1_000420', directory);
-	segmentation('1_000480', directory);
 	segmentation('1_000540', directory);
 	segmentation('1_000600', directory);
 	segmentation('1_000660', directory);

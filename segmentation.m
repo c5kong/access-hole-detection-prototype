@@ -71,7 +71,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	numOfRegions = nC;
 	
 
-	for k=1:5
+	for k=1:2
 		%//=======================================================================
 		%// Find neighbours
 		combineLoopCheck = numOfRegions;
