@@ -65,7 +65,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	bmapOnImg(:,:,2) = timg;
 	bmapOnImg(:,:,1) = grey_img;
 	bmapOnImg(:,:,3) = grey_img;
-	figure, imshow(bmapOnImg,[]);
+	%figure, imshow(bmapOnImg,[]);
 	%figure, imshow(labels,[]);
 
 	numOfRegions = nC;
@@ -135,7 +135,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 				for j=1:numOfRegions
 					combinedRegionB = find(listOfCombined == i);
 					if isempty(combinedRegionB) 
-						if neighbours(i, j) == 1 & contrastScore(i,1) > 0.6 & contrastScore(j,1) > 0.6;
+						if neighbours(i, j) == 1 & contrastScore(i,1) > 0 & contrastScore(j,1) > 0;
 							labels(labels == j) = i;
 							listOfCombined = [listOfCombined; j];
 						end
@@ -435,7 +435,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			[rows cols] = ind2sub(size(img), find(labels==i));
 			
 			%--display detection
-			rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 3, 'EdgeColor','g');
+			%rectangle('Position',[min(cols) min(rows)  (max(cols)-min(cols)) (max(rows)-min(rows)) ], 'LineWidth', 3, 'EdgeColor','g');
 
 			M{count, 1} = frameNumber;
 			M{count, 2} = min(cols);
