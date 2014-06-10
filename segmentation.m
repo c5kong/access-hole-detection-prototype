@@ -48,7 +48,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	%//=======================================================================
 	%// Superpixel segmentation
 	%//=======================================================================
-	nC = 40; % nC is the target number of superpixels.
+	nC = 35; % nC is the target number of superpixels.
 	lambda_prime = .5;
 	sigma = 5.0; 
 	conn8 = 1; % flag for using 8 connected grid graph (default setting).
@@ -71,7 +71,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 	numOfRegions = nC;
 	
 
-	for k=1:2
+	for k=1:3
 		%//=======================================================================
 		%// Find neighbours
 		combineLoopCheck = numOfRegions;
@@ -408,9 +408,7 @@ function [ X ] = segmentation(frameNumber, baseDirectory)
 			%-- assign a detection score based on the feature scores
 			%detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1) + contrastScore(i,1) + relativeIntensityScore(i,1))/5;
 			%detectionScore(i,1) = depthScore(i,1) * contrastScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
-			%detectionScore(i,1) = relativeIntensityScore(i,1);
-			%detectionScore(i,1) = depthScore(i,1) * widthScore(i,1) * aspectRatioScore(i,1) * relativeIntensityScore(i,1);
-			detectionScore(i,1) = (depthScore(i,1) + widthScore(i,1) + aspectRatioScore(i,1)+ contrastScore(i,1))/4;
+			detectionScore(i,1) = (0.5*depthScore(i,1))+ (0.125*widthScore(i,1)) + (0.125*aspectRatioScore(i,1))+ (0.25*contrastScore(i,1));
 
 		end
 	end	

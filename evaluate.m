@@ -22,7 +22,7 @@ function [ X ] = evaluate(detectionThreshold, inputFile, inputDirectory)
 	%// Open ground truth data
 	%//=======================================================================
 	
-	gtFile = ('groundTruth_noExt.csv');	
+	gtFile = ('groundTruth_noFileExtention.csv');	
 	gtDirectory = ('data/openni_data/');
 
 	fileID = fopen(strcat(gtDirectory, gtFile));
